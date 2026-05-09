@@ -145,7 +145,7 @@ func Prepare(params PrepareParams, logger *slog.Logger) (*Environment, error) {
 		if err := prepareCodexHomeWithOpts(codexHome, CodexHomeOptions{CodexVersion: params.CodexVersion}, logger); err != nil {
 			return nil, fmt.Errorf("execenv: prepare codex-home: %w", err)
 		}
-		if err := writeCodexWorkspaceSkills(codexHome, params.Task.AgentSkills); err != nil {
+		if err := writeCodexWorkspaceSkills(codexHome, params.Task.AgentSkills, logger); err != nil {
 			return nil, fmt.Errorf("execenv: write codex skills: %w", err)
 		}
 		env.CodexHome = codexHome
@@ -186,7 +186,7 @@ func Reuse(workDir, provider, codexVersion string, task TaskContextForEnv, logge
 			logger.Warn("execenv: refresh codex-home failed", "error", err)
 		} else {
 			env.CodexHome = codexHome
-			if err := writeCodexWorkspaceSkills(codexHome, task.AgentSkills); err != nil {
+			if err := writeCodexWorkspaceSkills(codexHome, task.AgentSkills, logger); err != nil {
 				logger.Warn("execenv: refresh codex skills failed", "error", err)
 			}
 		}
@@ -196,11 +196,36 @@ func Reuse(workDir, provider, codexVersion string, task TaskContextForEnv, logge
 	return env
 }
 
-func writeCodexWorkspaceSkills(codexHome string, skills []SkillContextForEnv) error {
-	if len(skills) == 0 {
-		return nil
+// writeCodexWorkspaceSkills materialises the agent's skills inside the
+// per-task CODEX_HOME. It runs in two passes:
+//
+//  1. Folio-managed skills: written as plain files via writeSkillFiles.
+//     These take precedence and live entirely inside the task home.
+//
+//  2. User-global pass-through: any skill present in the user's shared
+//     ~/.codex/skills/<name>/ that the agent did NOT already shadow is
+//     symlinked in. This brings codex agents in line with claude agents,
+//     where the CLI naturally merges ~/.claude/skills/ with the project
+//     directory. Without this step, daemon-managed CODEX_HOME hides the
+//     entire user-global skill registry — so a skill the operator can
+//     see when running `codex` directly silently disappears for any
+//     folio-managed codex agent (the original "debugger has no jira
+//     skill" surprise).
+//
+// Pass-through is a symlink rather than a copy so updates to the source
+// skill propagate without redeploying. Pass-through runs AFTER the
+// folio write so the symlink for an existing name is never created
+// (folio-managed plain dirs already occupy that slot, and writeSkillFiles
+// uses os.WriteFile which would otherwise follow a symlink and clobber
+// the user's source file).
+func writeCodexWorkspaceSkills(codexHome string, skills []SkillContextForEnv, logger *slog.Logger) error {
+	skillsDir := filepath.Join(codexHome, "skills")
+	if len(skills) > 0 {
+		if err := writeSkillFiles(skillsDir, skills); err != nil {
+			return err
+		}
 	}
-	return writeSkillFiles(filepath.Join(codexHome, "skills"), skills)
+	return linkUserGlobalCodexSkills(skillsDir, resolveSharedCodexHome(), logger)
 }
 
 // GCMeta is persisted to .gc_meta.json inside the env root so the GC loop

@@ -98,9 +98,12 @@ func prepareCodexHomeWithOpts(codexHome string, opts CodexHomeOptions, logger *s
 	// Drop `[[skills.config]]` entries inherited from the user's
 	// ~/.codex/config.toml. Codex Desktop writes plugin-backed skills with a
 	// `name` and no `path`, which the CLI's stricter TOML parser rejects with
-	// `missing field path` and bails out of `thread/start`. Folio writes the
-	// agent's active skills directly to `codex-home/skills/`, so the
-	// user-level registry is redundant here. See codex_skill_strip.go.
+	// `missing field path` and bails out of `thread/start`. Folio's
+	// codex-home/skills/ is the authoritative skill list for the task
+	// (folio-managed skills written first, then user-global skills
+	// symlinked in for parity with claude — see linkUserGlobalCodexSkills),
+	// so the user's `[[skills.config]]` registry is unnecessary here and
+	// would only re-introduce the parse failure. See codex_skill_strip.go.
 	if err := sanitizeCopiedCodexConfig(filepath.Join(codexHome, "config.toml")); err != nil {
 		logger.Warn("execenv: codex-home sanitize config failed", "error", err)
 	}
@@ -262,6 +265,71 @@ func logCodexAuthState(authPath string, logger *slog.Logger) {
 // sandbox/network directives now live in a managed block rendered by
 // codex_sandbox.go's ensureCodexSandboxConfig so they can be updated
 // idempotently without touching user-managed keys.)
+
+// linkUserGlobalCodexSkills exposes the operator's user-global codex skills
+// (~/.codex/skills/<name>/) inside the per-task CODEX_HOME by symlinking
+// each entry that isn't already present locally. Existing entries are
+// preserved untouched: folio-managed skills written by writeSkillFiles,
+// the .system metadata directory, or any prior pass-through link from a
+// reused env all stay as they are. The pass-through is one-way (we only
+// add links, never delete), so removing a skill from ~/.codex/skills/
+// won't immediately propagate into a long-lived task home — that's the
+// right trade-off (we'd rather an extra stale link than a vanished
+// skill mid-task).
+//
+// sharedHome is the resolved user-global codex home (typically ~/.codex).
+// Pass an empty string or a missing skills/ subdir to skip this step.
+// Per-entry symlink failures are logged and skipped: one broken skill
+// must not take down task setup, since the agent often doesn't depend
+// on it. A truly fatal error (skillsDir mkdir failure, ReadDir on a
+// directory that exists but can't be enumerated) is returned.
+func linkUserGlobalCodexSkills(skillsDir, sharedHome string, logger *slog.Logger) error {
+	if sharedHome == "" {
+		return nil
+	}
+	srcDir := filepath.Join(sharedHome, "skills")
+	entries, err := os.ReadDir(srcDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("read user-global codex skills: %w", err)
+	}
+
+	if err := os.MkdirAll(skillsDir, 0o755); err != nil {
+		return fmt.Errorf("create skills dir: %w", err)
+	}
+
+	for _, entry := range entries {
+		name := entry.Name()
+		// Skip dotfiles (.DS_Store etc.); .system in the destination is
+		// daemon-owned, but the source filter here is just "user didn't
+		// mean this as a skill if it starts with a dot".
+		if len(name) > 0 && name[0] == '.' {
+			continue
+		}
+		// Only directories represent skills; loose files in ~/.codex/skills/
+		// aren't a documented format and skipping them keeps surprises out.
+		if !entry.IsDir() {
+			continue
+		}
+		dst := filepath.Join(skillsDir, name)
+		// Don't overwrite anything already at dst — folio-managed skills,
+		// prior pass-through links, all win. Use Lstat so an existing
+		// symlink (correct or stale) isn't followed.
+		if _, err := os.Lstat(dst); err == nil {
+			continue
+		}
+		src := filepath.Join(srcDir, name)
+		if err := createDirLink(src, dst); err != nil {
+			if logger != nil {
+				logger.Warn("execenv: link user-global codex skill failed", "skill", name, "error", err)
+			}
+			continue
+		}
+	}
+	return nil
+}
 
 // copyFileIfExists copies src to dst. If src doesn't exist, it's a no-op.
 // If dst already exists, it's not overwritten.
