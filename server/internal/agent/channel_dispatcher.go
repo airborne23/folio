@@ -25,6 +25,17 @@ import (
 // subscribe-mode agents should not chime in.
 var mentionAttemptRe = regexp.MustCompile(`@[\p{L}\p{N}][\p{L}\p{N}_\-]*`)
 
+// mentionAllRe matches the literal "@all" broadcast token. We special-
+// case it because the user's intent ("everyone respond") is the
+// opposite of what mentionAttemptRe assumes ("someone specific got
+// called out, others stay quiet"). Without this, "@all 大家来介绍下"
+// resolves to zero agent mentions but trips hasExplicitMention, which
+// suppresses every subscribe-mode agent — the exact wrong behavior.
+//
+// Word boundaries are explicit (start-or-non-token char on both sides)
+// so "@allies" / "@allbright" don't trip the broadcast path.
+var mentionAllRe = regexp.MustCompile(`(^|[^\p{L}\p{N}_\-])@all($|[^\p{L}\p{N}_\-])`)
+
 // TaskEnqueuer is the seam between the dispatcher and the actual
 // agent_task_queue insert. The interface lets unit tests verify dispatch
 // decisions without exercising a real DB write path.
@@ -117,6 +128,15 @@ func (d *ChannelDispatcher) Dispatch(ctx context.Context, msg db.ChannelMessage)
 	// call-out. Counting any @-shaped token captures that intent.
 	hasExplicitMention := mentionAttemptRe.MatchString(anchorMsg.Body)
 
+	// isMentionAll inverts the suppression: @all means "everyone
+	// respond, including subscribe-mode agents who weren't otherwise
+	// named". Without this branch, hasExplicitMention=true would silence
+	// every subscribe agent on a broadcast — the exact opposite of the
+	// user's intent. Treated like a directed mention: HIGH priority,
+	// gates bypassed for the human-trigger case (the agent-trigger case
+	// still goes through cooldown / max-turns to bound broadcast loops).
+	isMentionAll := mentionAllRe.MatchString(anchorMsg.Body)
+
 	if msg.AuthorType == "member" {
 		if err := d.q.ResetConsecutiveAgentTurns(ctx, msg.ChannelID); err != nil {
 			slog.Warn("channel dispatcher: reset consecutive turns failed",
@@ -138,9 +158,10 @@ func (d *ChannelDispatcher) Dispatch(ctx context.Context, msg db.ChannelMessage)
 		}
 
 		isMentioned := mentioned[agentID]
+		isAddressed := isMentioned || isMentionAll
 		mode := effectiveSubscribeMode(m)
 		priority := PriorityHigh
-		if !isMentioned {
+		if !isAddressed {
 			if mode != "subscribe" {
 				continue
 			}
