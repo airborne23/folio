@@ -16,6 +16,12 @@ func TestGetConfigIncludesRuntimeAuthConfig(t *testing.T) {
 	t.Setenv("GOOGLE_CLIENT_ID", "google-client-id")
 	t.Setenv("POSTHOG_API_KEY", "phc_test")
 	t.Setenv("POSTHOG_HOST", "https://eu.i.posthog.com")
+	// `.env` files used by self-host (and by `make check`) commonly set
+	// ANALYTICS_DISABLED=true, which short-circuits GetConfig before it
+	// reads the Posthog env vars and returns empty values regardless of
+	// what t.Setenv just configured. Force-clear so the test exercises
+	// the analytics-on path it claims to.
+	t.Setenv("ANALYTICS_DISABLED", "")
 
 	req := httptest.NewRequest(http.MethodGet, "/api/config", nil)
 	w := httptest.NewRecorder()

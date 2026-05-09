@@ -19,11 +19,17 @@ func setupRerunTestFixture(t *testing.T) (string, string, string) {
 	ctx := context.Background()
 
 	var agentID, runtimeID string
+	// `archived_at IS NULL` filter: comment_trigger_integration_test creates
+	// a second agent in the same workspace and archives it in t.Cleanup.
+	// Test order across files in this package is non-deterministic, so the
+	// LIMIT 1 here used to return the archived row half the time and trip
+	// "agent is archived" inside RerunIssue.
 	if err := testPool.QueryRow(ctx, `
 		SELECT a.id, a.runtime_id FROM agent a
 		JOIN member m ON m.workspace_id = a.workspace_id
 		JOIN "user" u ON u.id = m.user_id
-		WHERE u.email = $1
+		WHERE u.email = $1 AND a.archived_at IS NULL
+		ORDER BY a.created_at ASC
 		LIMIT 1
 	`, integrationTestEmail).Scan(&agentID, &runtimeID); err != nil {
 		t.Fatalf("failed to find test agent: %v", err)
