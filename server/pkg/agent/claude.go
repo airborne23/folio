@@ -506,7 +506,42 @@ func mergeEnv(base []string, extra map[string]string) []string {
 func isFilteredChildEnvKey(key string) bool {
 	return key == "CLAUDECODE" ||
 		strings.HasPrefix(key, "CLAUDECODE_") ||
-		strings.HasPrefix(key, "CLAUDE_CODE_")
+		strings.HasPrefix(key, "CLAUDE_CODE_") ||
+		isProxyEnvKey(key)
+}
+
+// isProxyEnvKey reports whether a variable controls HTTP/HTTPS proxy
+// routing. We strip these from the daemon's inherited env before
+// spawning agents because:
+//
+//   - The daemon is launched in the operator's shell, which often has a
+//     corporate or developer outbound proxy exported (HTTP_PROXY=
+//     127.0.0.1:10809 is the common case). That proxy is *appropriate*
+//     for the daemon's outbound TLS to e.g. api.anthropic.com, but
+//     *wrong* for the agent CLI subprocesses, which need to call the
+//     Folio LAN server directly (folio issue get → 10.26.20.3:38080).
+//
+//   - Even when the operator sets NO_PROXY to include the LAN IP, the
+//     casing inconsistency between NO_PROXY (Go's preferred) and
+//     no_proxy (curl / Node-stack default) leaks through anywhere along
+//     the daemon → claude → bash → folio chain that re-reads env. Claude
+//     Code in particular sanitises its child env in ways we can't see;
+//     by the time `bash -c "folio …"` runs, the LAN IP is mysteriously
+//     absent from one casing and the request loops through the proxy.
+//
+// Stripping all proxy variables means the agent's default env has zero
+// proxy config — folio CLI hits the LAN server directly. Operators who
+// need outbound proxy for the agent itself (Anthropic API, OpenAI API,
+// etc.) configure HTTPS_PROXY / NO_PROXY explicitly in the per-agent
+// CustomEnv settings, where the intent is documented and per-agent
+// scoped. CustomEnv is merged AFTER the base filter, so explicit values
+// always win.
+func isProxyEnvKey(key string) bool {
+	switch strings.ToUpper(key) {
+	case "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "ALL_PROXY", "FTP_PROXY":
+		return true
+	}
+	return false
 }
 
 // blockedArgMode specifies whether a blocked arg takes a value or is standalone.
