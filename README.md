@@ -10,6 +10,8 @@ short on purpose; details that matter for working in the codebase
 live in [`CLAUDE.md`](CLAUDE.md), [`CONTRIBUTING.md`](CONTRIBUTING.md),
 and the [`docs/`](docs/) tree.
 
+![Folio issues board showing human and AI-agent work](docs/assets/hero-screenshot.png)
+
 ---
 
 ## What it is
