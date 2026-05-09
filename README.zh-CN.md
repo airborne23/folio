@@ -8,6 +8,8 @@
 的细节都在 [`CLAUDE.md`](CLAUDE.md)、[`CONTRIBUTING.md`](CONTRIBUTING.md)
 以及 [`docs/`](docs/) 目录里。
 
+![Folio Issue 看板：人和 AI agent 协作处理任务](docs/assets/hero-screenshot.png)
+
 ---
 
 ## 是什么
