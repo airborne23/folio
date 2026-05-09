@@ -405,75 +405,49 @@ func (h *Handler) VerifyCode(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// QuickSignupRequest carries the no-verification signup-or-login payload —
-// just an email and an optional display name. The server treats every call
-// as either "find user, log them in" or "create user, log them in." There
-// is no verification code, no email round-trip, no password.
-type QuickSignupRequest struct {
+// LoginRequest is the email-only sign-in payload. Returning visitors only
+// need to type their email — name was already collected at signup and is
+// not editable from here.
+type LoginRequest struct {
 	Email string `json:"email"`
-	Name  string `json:"name"`
 }
 
-// QuickSignup is the simplified entry point used by the new editorial
-// login page: takes an email + display name and returns a session token
-// without any email verification step. Reuses findOrCreateUser so the
-// signup-allowlist gating still applies (production deployments that
-// disabled signups won't accidentally let everyone in through this path),
-// then updates the user's display name if the caller supplied one.
+// Login signs in an existing user by email. Returns 404 when the email
+// has no account — the UI surfaces that as "no account, sign up?" rather
+// than the previous QuickSignup behaviour where a typo in the email
+// silently created a new account.
 //
-// Intentionally weaker than the verification-code path — appropriate for
-// dev / demo / private instances where a six-digit email round-trip just
-// adds friction. Production sites that need real verification should
-// disable this route at the proxy layer or behind a feature flag.
-func (h *Handler) QuickSignup(w http.ResponseWriter, r *http.Request) {
-	var req QuickSignupRequest
+// No verification code, no password. Authentication is by possession of
+// the email at signup time; current deployments target dev / demo /
+// private instances where a six-digit round-trip is friction. Public
+// production sites should put a verification step or SSO in front of
+// this handler.
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
 
 	email := strings.ToLower(strings.TrimSpace(req.Email))
-	name := strings.TrimSpace(req.Name)
 	if email == "" {
 		writeError(w, http.StatusBadRequest, "email is required")
 		return
 	}
 
-	user, isNew, err := h.findOrCreateUser(r.Context(), email)
+	user, err := h.Queries.GetUserByEmail(r.Context(), email)
 	if err != nil {
-		var signupErr SignupError
-		if errors.As(err, &signupErr) {
-			writeError(w, http.StatusForbidden, signupErr.Error())
+		if isNotFound(err) {
+			writeError(w, http.StatusNotFound, "no account exists for this email")
 			return
 		}
-		writeError(w, http.StatusInternalServerError, "failed to create user")
+		writeError(w, http.StatusInternalServerError, "failed to look up user")
 		return
-	}
-
-	// Update the display name when the caller supplied a different one. For
-	// existing users we treat the QuickSignup call as a re-login — a name
-	// change here is intentional (the user typed a new one in the form), so
-	// we honour it. For new users `findOrCreateUser` defaulted to the email
-	// prefix, which the supplied name should override.
-	if name != "" && name != user.Name {
-		updated, updateErr := h.Queries.UpdateUser(r.Context(), db.UpdateUserParams{
-			ID:   user.ID,
-			Name: name,
-		})
-		if updateErr == nil {
-			user = updated
-		} else {
-			slog.Warn("quick-signup name update failed", "user_id", uuidToString(user.ID), "error", updateErr)
-		}
-	}
-
-	if isNew {
-		h.Analytics.Capture(analytics.Signup(uuidToString(user.ID), user.Email, signupSourceFromRequest(r)))
 	}
 
 	tokenString, err := h.issueJWT(user)
 	if err != nil {
-		slog.Warn("quick-signup token issue failed", append(logger.RequestAttrs(r), "error", err, "email", email)...)
+		slog.Warn("login token issue failed", append(logger.RequestAttrs(r), "error", err, "email", email)...)
 		writeError(w, http.StatusInternalServerError, "failed to generate token")
 		return
 	}
@@ -488,8 +462,95 @@ func (h *Handler) QuickSignup(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	slog.Info("quick-signup logged in", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email, "is_new", isNew)...)
+	slog.Info("login", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email)...)
 	writeJSON(w, http.StatusOK, LoginResponse{
+		Token: tokenString,
+		User:  userToResponse(user),
+	})
+}
+
+// SignupRequest carries the email + display name pair needed to create a
+// new account. Both fields are required — leaving the registration form
+// half-complete should fail loudly rather than land in a half-set-up
+// account.
+type SignupRequest struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+// Signup creates a new account and signs the user in. Returns 409 when
+// the email already exists — the UI surfaces that as "already registered,
+// sign in instead?" so a returning visitor on the wrong tab gets a useful
+// nudge rather than a silent re-login.
+//
+// No verification code: the same caveat as Login applies (private /
+// internal deployments only — public production needs a verification
+// gate in front).
+func (h *Handler) Signup(w http.ResponseWriter, r *http.Request) {
+	var req SignupRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	name := strings.TrimSpace(req.Name)
+	if email == "" {
+		writeError(w, http.StatusBadRequest, "email is required")
+		return
+	}
+	if name == "" {
+		writeError(w, http.StatusBadRequest, "name is required")
+		return
+	}
+
+	// Conflict check before signup gating: a returning user who hit the
+	// signup tab by mistake gets the most useful message ("you already
+	// have an account") rather than "signups disabled" even when the
+	// instance does have signups disabled — they're not creating one.
+	if _, err := h.Queries.GetUserByEmail(r.Context(), email); err == nil {
+		writeError(w, http.StatusConflict, "an account already exists for this email")
+		return
+	} else if !isNotFound(err) {
+		writeError(w, http.StatusInternalServerError, "failed to look up user")
+		return
+	}
+
+	if err := h.checkSignupAllowed(email, true); err != nil {
+		writeError(w, http.StatusForbidden, err.Error())
+		return
+	}
+
+	user, err := h.Queries.CreateUser(r.Context(), db.CreateUserParams{
+		Email: email,
+		Name:  name,
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to create user")
+		return
+	}
+
+	h.Analytics.Capture(analytics.Signup(uuidToString(user.ID), user.Email, signupSourceFromRequest(r)))
+
+	tokenString, err := h.issueJWT(user)
+	if err != nil {
+		slog.Warn("signup token issue failed", append(logger.RequestAttrs(r), "error", err, "email", email)...)
+		writeError(w, http.StatusInternalServerError, "failed to generate token")
+		return
+	}
+
+	if err := auth.SetAuthCookies(w, tokenString); err != nil {
+		slog.Warn("failed to set auth cookies", "error", err)
+	}
+
+	if h.CFSigner != nil {
+		for _, cookie := range h.CFSigner.SignedCookies(time.Now().Add(30 * 24 * time.Hour)) {
+			http.SetCookie(w, cookie)
+		}
+	}
+
+	slog.Info("signup", append(logger.RequestAttrs(r), "user_id", uuidToString(user.ID), "email", user.Email)...)
+	writeJSON(w, http.StatusCreated, LoginResponse{
 		Token: tokenString,
 		User:  userToResponse(user),
 	})

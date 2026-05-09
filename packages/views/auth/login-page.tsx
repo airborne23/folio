@@ -7,7 +7,7 @@ import { Button } from "@folio/ui/components/ui/button";
 import { Label } from "@folio/ui/components/ui/label";
 import { useAuthStore } from "@folio/core/auth";
 import { workspaceKeys } from "@folio/core/workspace/queries";
-import { api } from "@folio/core/api";
+import { api, ApiError } from "@folio/core/api";
 import type { User } from "@folio/core/types";
 import { FolioIcon } from "@folio/ui/components/common/folio-icon";
 import { useT } from "../i18n";
@@ -15,6 +15,8 @@ import { useT } from "../i18n";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+
+type AuthMode = "signin" | "signup";
 
 interface CliCallbackConfig {
   /** Validated localhost callback URL */
@@ -35,6 +37,9 @@ interface LoginPageProps {
   onTokenObtained?: () => void;
   /** Slot rendered at the bottom of the form. */
   extra?: ReactNode;
+  /** Initial form mode. Defaults to "signin"; signup-via-link can pass
+   *  "signup". */
+  initialMode?: AuthMode;
 }
 
 // ---------------------------------------------------------------------------
@@ -71,15 +76,18 @@ export function validateCliCallback(cliCallback: string): boolean {
 // ---------------------------------------------------------------------------
 
 /**
- * Simplified, no-verification entry surface. Two fields (email + name), one
- * button. On submit the backend's QuickSignup either creates the user or
- * logs an existing one in, and we land in the workspace.
+ * No-verification entry surface with explicit Sign in / Create account
+ * modes. The unified single-button QuickSignup form was clearer to read
+ * but silently created accounts on email typos and let the routing layer
+ * land users in inconsistent "have-workspace, un-onboarded" states. The
+ * split is enforced by the backend (`/auth/login` 404s on missing email,
+ * `/auth/signup` 409s on existing email); this page surfaces those as
+ * "switch to the other tab?" hints rather than generic errors.
  *
  * Visual contract follows the Anthropic-cream chrome used elsewhere: ✻
  * caramel star, Source Serif 4 hero, italic serif lede, paper canvas (no
- * card chrome). The form fields sit unframed below the lede so the page
- * reads as "fill in your name, begin," not "fill in this form to register
- * an account on Folio Inc., proceed to step 2 of 4, etc."
+ * card chrome). Tabs sit above the form so the user picks a path before
+ * thinking about fields.
  */
 export function LoginPage({
   logo,
@@ -87,9 +95,11 @@ export function LoginPage({
   cliCallback,
   onTokenObtained,
   extra,
+  initialMode = "signin",
 }: LoginPageProps) {
   const { t } = useT("auth");
   const qc = useQueryClient();
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
@@ -129,6 +139,13 @@ export function LoginPage({
       });
   }, [cliCallback]);
 
+  // Switching modes resets the per-mode error so a stale "no account for
+  // this email" doesn't linger over the signup form.
+  const switchMode = useCallback((next: AuthMode) => {
+    setMode(next);
+    setError("");
+  }, []);
+
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {
       e?.preventDefault();
@@ -138,14 +155,21 @@ export function LoginPage({
         setError(t(($) => $.common.email_required));
         return;
       }
+      if (mode === "signup" && !trimmedName) {
+        setError(t(($) => $.common.name_required));
+        return;
+      }
       setLoading(true);
       setError("");
       try {
         if (cliCallback) {
-          // CLI path: get the token directly from QuickSignup so we can
-          // hand it off to the CLI without requiring a separate cookie
-          // issue step.
-          const { token } = await api.quickSignup(trimmedEmail, trimmedName);
+          // CLI path: hit the same endpoint the user picked, hand the
+          // token off, and redirect. Mirrors the standard flow but
+          // bypasses workspace seeding because the CLI is the consumer.
+          const { token } =
+            mode === "signin"
+              ? await api.login(trimmedEmail)
+              : await api.signup(trimmedEmail, trimmedName);
           localStorage.setItem("folio_token", token);
           api.setToken(token);
           onTokenObtained?.();
@@ -155,21 +179,22 @@ export function LoginPage({
         // Standard web/desktop path: store updates user, seed workspace
         // list into Query cache so the post-login destination resolver
         // can read it synchronously.
-        await useAuthStore.getState().quickSignup(trimmedEmail, trimmedName);
+        const store = useAuthStore.getState();
+        if (mode === "signin") {
+          await store.login(trimmedEmail);
+        } else {
+          await store.signup(trimmedEmail, trimmedName);
+        }
         const wsList = await api.listWorkspaces();
         qc.setQueryData(workspaceKeys.list(), wsList);
         onTokenObtained?.();
         onSuccess();
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : t(($) => $.errors.send_failed),
-        );
+        setError(translateAuthError(err, mode, t));
         setLoading(false);
       }
     },
-    [email, name, cliCallback, onSuccess, onTokenObtained, qc, t],
+    [email, name, mode, cliCallback, onSuccess, onTokenObtained, qc, t],
   );
 
   const handleCliAuthorize = async () => {
@@ -229,8 +254,12 @@ export function LoginPage({
   }
 
   // -------------------------------------------------------------------------
-  // Default — email + name form
+  // Default — sign in / create account form
   // -------------------------------------------------------------------------
+
+  const isSignin = mode === "signin";
+  const submitDisabled =
+    !email || (mode === "signup" && !name) || loading;
 
   return (
     <Shell logo={logo}>
@@ -238,10 +267,14 @@ export function LoginPage({
         {t(($) => $.signin.title)}
       </h1>
       <p className="mt-3 max-w-md text-center font-serif text-base italic leading-relaxed text-muted-foreground">
-        {t(($) => $.signin.description)}
+        {isSignin
+          ? t(($) => $.signin.description_signin)
+          : t(($) => $.signin.description_signup)}
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-10 flex w-full max-w-sm flex-col gap-5">
+      <ModeTabs mode={mode} onChange={switchMode} t={t} />
+
+      <form onSubmit={handleSubmit} className="mt-6 flex w-full max-w-sm flex-col gap-5">
         <div className="flex flex-col gap-1.5">
           <Label
             htmlFor="login-email"
@@ -259,35 +292,129 @@ export function LoginPage({
             required
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label
-            htmlFor="login-name"
-            className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
-          >
-            {t(($) => $.common.name)}
-          </Label>
-          <Input
-            id="login-name"
-            type="text"
-            placeholder={t(($) => $.common.name_placeholder)}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
+        {!isSignin && (
+          <div className="flex flex-col gap-1.5">
+            <Label
+              htmlFor="login-name"
+              className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground"
+            >
+              {t(($) => $.common.name)}
+            </Label>
+            <Input
+              id="login-name"
+              type="text"
+              placeholder={t(($) => $.common.name_placeholder)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+        )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button
           type="submit"
-          disabled={!email || loading}
+          disabled={submitDisabled}
           size="lg"
           className="mt-2 w-full"
         >
-          {loading ? t(($) => $.signin.sending) : t(($) => $.signin.continue)}
+          {loading
+            ? isSignin
+              ? t(($) => $.signin.submitting_signin)
+              : t(($) => $.signin.submitting_signup)
+            : isSignin
+              ? t(($) => $.signin.submit_signin)
+              : t(($) => $.signin.submit_signup)}
         </Button>
+        <p className="text-center text-xs text-muted-foreground">
+          {isSignin
+            ? t(($) => $.signin.no_account)
+            : t(($) => $.signin.have_account)}{" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline-offset-4 hover:underline"
+            onClick={() => switchMode(isSignin ? "signup" : "signin")}
+          >
+            {isSignin
+              ? t(($) => $.signin.switch_to_signup)
+              : t(($) => $.signin.switch_to_signin)}
+          </button>
+        </p>
       </form>
 
       {extra && <div className="mt-6 max-w-sm text-center text-xs text-muted-foreground">{extra}</div>}
     </Shell>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+/**
+ * Two-tab control for the Sign in / Create account split. Pure
+ * presentation — state lives in the parent so the submit handler can
+ * pick the right endpoint without prop-drilling.
+ */
+function ModeTabs({
+  mode,
+  onChange,
+  t,
+}: {
+  mode: AuthMode;
+  onChange: (next: AuthMode) => void;
+  t: ReturnType<typeof useT<"auth">>["t"];
+}) {
+  const Tab = ({ value, children }: { value: AuthMode; children: ReactNode }) => {
+    const active = mode === value;
+    return (
+      <button
+        type="button"
+        onClick={() => onChange(value)}
+        aria-pressed={active}
+        className={
+          "flex-1 border-b-2 px-2 py-2 text-sm font-medium transition-colors " +
+          (active
+            ? "border-foreground text-foreground"
+            : "border-transparent text-muted-foreground hover:text-foreground")
+        }
+      >
+        {children}
+      </button>
+    );
+  };
+  return (
+    <div className="mt-8 flex w-full max-w-sm border-b border-border">
+      <Tab value="signin">{t(($) => $.signin.tab_signin)}</Tab>
+      <Tab value="signup">{t(($) => $.signin.tab_signup)}</Tab>
+    </div>
+  );
+}
+
+/**
+ * Map an `api.login` / `api.signup` rejection to a user-facing error
+ * message. The split-mode design means 404 from /login and 409 from
+ * /signup are *expected* outcomes that should nudge the user to switch
+ * tabs, not ambient failures. Anything else falls through to the
+ * server's text or a generic per-mode fallback.
+ */
+function translateAuthError(
+  err: unknown,
+  mode: AuthMode,
+  t: ReturnType<typeof useT<"auth">>["t"],
+): string {
+  if (err instanceof ApiError) {
+    if (mode === "signin" && err.status === 404) {
+      return t(($) => $.errors.no_account_for_email);
+    }
+    if (mode === "signup" && err.status === 409) {
+      return t(($) => $.errors.email_already_registered);
+    }
+    if (err.message) return err.message;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return mode === "signin"
+    ? t(($) => $.errors.login_failed)
+    : t(($) => $.errors.signup_failed);
 }
 
 /**
