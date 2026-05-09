@@ -52,10 +52,18 @@ If you run this command from a different machine than the server, also pass
 --callback-host <FQDN-or-IP-the-browser-can-reach-back-to-this-machine-on> so
 the OAuth login flow can return the token to the CLI.
 
+For headless servers without a browser, mint a personal access token (mul_...)
+in the web UI and pass it inline with --token to skip the OAuth flow entirely.
+
 Examples:
   folio setup self-host
   folio setup self-host --server-url https://api.internal.co --app-url https://app.internal.co
-  folio setup self-host --port 9090 --frontend-port 4000`,
+  folio setup self-host --port 9090 --frontend-port 4000
+  folio setup self-host --server-url http://10.0.0.5:8080 --token mul_xxxxxxxxxxxx`,
+	// MaximumNArgs(1) mirrors loginCmd so the space form `--token mul_xxx` is
+	// accepted (NoOptDefVal binds --token to a sentinel and the value lands
+	// in args[0], which runAuthLogin promotes back to the token value).
+	Args: cobra.MaximumNArgs(1),
 	RunE: runSetupSelfHost,
 }
 
@@ -65,6 +73,10 @@ func init() {
 	setupSelfHostCmd.Flags().Int("port", 8080, "Backend server port (used when --server-url is not set)")
 	setupSelfHostCmd.Flags().Int("frontend-port", 3000, "Frontend port (used when --app-url is not set)")
 	setupSelfHostCmd.Flags().String(callbackHostFlag, "", "Host the OAuth callback URL points at (auto-detected when empty). Use this for reverse-proxy / FQDN setups.")
+	// Mirror loginCmd's --token flag: lets runAuthLogin (called via runLogin
+	// inside runSetupSelfHost) take the non-browser path on headless boxes.
+	setupSelfHostCmd.Flags().String("token", "", "Authenticate using a personal access token (mul_...) instead of opening a browser. Use for headless servers.")
+	setupSelfHostCmd.Flags().Lookup("token").NoOptDefVal = tokenPromptSentinel
 
 	setupCmd.AddCommand(setupCloudCmd)
 	setupCmd.AddCommand(setupSelfHostCmd)
@@ -203,14 +215,20 @@ func runSetupSelfHost(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stderr, "  app_url:    %s\n", cfg.AppURL)
 	printConfigLocation(profile)
 
-	// Check if the server is reachable.
-	if !probeServer(serverURL) {
+	// Skip the probe in --token mode: the user is non-interactive and a
+	// reachability problem will surface clearly during the token-validation
+	// HTTP call below, with the actual error rather than a generic "not
+	// reachable" warning that the legacy probe path emits then returns nil.
+	tokenFlagSet := cmd.Flags().Changed("token")
+	if !tokenFlagSet && !probeServer(serverURL) {
 		fmt.Fprintf(os.Stderr, "\n⚠ Server at %s is not reachable.\n", serverURL)
 		fmt.Fprintln(os.Stderr, "  Make sure the server is running, then run 'folio login'.")
 		return nil
 	}
 
-	// Authenticate.
+	// Authenticate. runLogin → runAuthLogin checks cmd.Flags().Changed("token")
+	// and routes to the token path when --token is set, so we don't need to
+	// branch here ourselves.
 	fmt.Fprintln(os.Stderr, "")
 	if err := runLogin(cmd, args); err != nil {
 		return err
