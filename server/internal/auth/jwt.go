@@ -28,22 +28,22 @@ func JWTSecret() []byte {
 	return jwtSecret
 }
 
-// GeneratePATToken creates a new personal access token: "mul_" + 40 random hex chars.
+// GeneratePATToken creates a new personal access token: "fol_" + 40 random hex chars.
 func GeneratePATToken() (string, error) {
 	b := make([]byte, 20) // 20 bytes = 40 hex chars
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("generate PAT token: %w", err)
 	}
-	return "mul_" + hex.EncodeToString(b), nil
+	return "fol_" + hex.EncodeToString(b), nil
 }
 
-// GenerateDaemonToken creates a new daemon auth token: "mdt_" + 40 random hex chars.
+// GenerateDaemonToken creates a new daemon auth token: "fdt_" + 40 random hex chars.
 func GenerateDaemonToken() (string, error) {
 	b := make([]byte, 20) // 20 bytes = 40 hex chars
 	if _, err := rand.Read(b); err != nil {
 		return "", fmt.Errorf("generate daemon token: %w", err)
 	}
-	return "mdt_" + hex.EncodeToString(b), nil
+	return "fdt_" + hex.EncodeToString(b), nil
 }
 
 // HashToken returns the hex-encoded SHA-256 hash of a token string.

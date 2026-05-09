@@ -141,7 +141,7 @@ func TestLoginTokenFlagWiring(t *testing.T) {
 // TestLoginTokenFlagParsing exercises every documented invocation form
 // against a cobra command wired up exactly the same way as the production
 // loginCmd, then runs runAuthLogin's flag-resolution logic to confirm the
-// right downstream branch is taken: `--token mul_xxx` and `--token=mul_xxx`
+// right downstream branch is taken: `--token fol_xxx` and `--token=fol_xxx`
 // both consume the value (the bug from #1994), `--token` alone falls
 // through to the prompt sentinel (preserves the legacy headless form), and
 // no flag at all leaves the browser flow untouched.
@@ -159,13 +159,13 @@ func TestLoginTokenFlagParsing(t *testing.T) {
 	}{
 		{
 			name: "space-separated value (the form from #1994)",
-			argv: []string{"--token", "mul_xxx"},
-			want: want{changed: true, resolvedToken: "mul_xxx"},
+			argv: []string{"--token", "fol_xxx"},
+			want: want{changed: true, resolvedToken: "fol_xxx"},
 		},
 		{
 			name: "equals-separated value",
-			argv: []string{"--token=mul_yyy"},
-			want: want{changed: true, resolvedToken: "mul_yyy"},
+			argv: []string{"--token=fol_yyy"},
+			want: want{changed: true, resolvedToken: "fol_yyy"},
 		},
 		{
 			name: "no value falls through to prompt (legacy CLI_INSTALL.md form)",

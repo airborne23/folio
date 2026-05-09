@@ -44,8 +44,8 @@ func Auth(queries *db.Queries, patCache *auth.PATCache) func(http.Handler) http.
 				return
 			}
 
-			// PAT: tokens starting with "mul_"
-			if strings.HasPrefix(tokenString, "mul_") {
+			// PAT: tokens starting with "fol_"
+			if strings.HasPrefix(tokenString, "fol_") {
 				hash := auth.HashToken(tokenString)
 
 				// Cache hit: TTL has not expired, the token was valid the

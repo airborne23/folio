@@ -57,14 +57,14 @@ func WithDaemonContext(ctx context.Context, workspaceID, daemonID string) contex
 	return ctx
 }
 
-// DaemonAuth validates daemon auth tokens (mdt_ prefix) or falls back to
+// DaemonAuth validates daemon auth tokens (fdt_ prefix) or falls back to
 // JWT/PAT validation for backward compatibility with daemons that
 // authenticate via user tokens.
 //
 // Both caches are optional. When non-nil:
-//   - daemonCache short-circuits the daemon_token DB lookup on the mdt_ path
+//   - daemonCache short-circuits the daemon_token DB lookup on the fdt_ path
 //   - patCache short-circuits the PAT DB lookup AND the last_used_at update
-//     on the mul_ fallback path. This is the same cache shared with the
+//     on the fol_ fallback path. This is the same cache shared with the
 //     regular Auth middleware, so a single hot PAT used by both human CLI
 //     and a daemon converges on one DB round-trip per AuthCacheTTL window.
 //
@@ -86,8 +86,8 @@ func DaemonAuth(queries *db.Queries, patCache *auth.PATCache, daemonCache *auth.
 				return
 			}
 
-			// Daemon token: "mdt_" prefix.
-			if strings.HasPrefix(tokenString, "mdt_") {
+			// Daemon token: "fdt_" prefix.
+			if strings.HasPrefix(tokenString, "fdt_") {
 				hash := auth.HashToken(tokenString)
 
 				if id, ok := daemonCache.Get(r.Context(), hash); ok {
@@ -128,8 +128,8 @@ func DaemonAuth(queries *db.Queries, patCache *auth.PATCache, daemonCache *auth.
 				return
 			}
 
-			// Fallback: PAT tokens ("mul_" prefix).
-			if strings.HasPrefix(tokenString, "mul_") {
+			// Fallback: PAT tokens ("fol_" prefix).
+			if strings.HasPrefix(tokenString, "fol_") {
 				hash := auth.HashToken(tokenString)
 
 				if userID, ok := patCache.Get(r.Context(), hash); ok {

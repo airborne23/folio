@@ -77,7 +77,7 @@ func setHandlerTestWorkspaceRepos(t *testing.T, repos []map[string]string) {
 }
 
 // newDaemonTokenRequest creates an HTTP request with daemon token context set
-// (simulating DaemonAuth middleware for mdt_ tokens).
+// (simulating DaemonAuth middleware for fdt_ tokens).
 func newDaemonTokenRequest(method, path string, body any, workspaceID, daemonID string) *http.Request {
 	var buf bytes.Buffer
 	if body != nil {

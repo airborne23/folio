@@ -32,10 +32,10 @@ import (
 
 const (
 	// Namespaced so we don't collide with the realtime relay's ws:* keys.
-	localSkillListKeyPrefix       = "mul:local_skill:list:"
-	localSkillListPendingPrefix   = "mul:local_skill:list:pending:"
-	localSkillImportKeyPrefix     = "mul:local_skill:import:"
-	localSkillImportPendingPrefix = "mul:local_skill:import:pending:"
+	localSkillListKeyPrefix       = "fol:local_skill:list:"
+	localSkillListPendingPrefix   = "fol:local_skill:list:pending:"
+	localSkillImportKeyPrefix     = "fol:local_skill:import:"
+	localSkillImportPendingPrefix = "fol:local_skill:import:pending:"
 	localSkillRedisPopMaxRetries  = 5
 )
 
