@@ -992,3 +992,96 @@ func TestDispatch_Subscribe_DefaultModeFromChannel(t *testing.T) {
 		t.Errorf("priority=%d want NORMAL", fe.calls[0].Priority)
 	}
 }
+
+// @all is a broadcast — every agent in the channel must fire at HIGH
+// priority, including subscribe-mode agents who weren't otherwise
+// named. Without the dispatcher's @all special case, the bare "@all"
+// trips hasExplicitMention (any @-token suppresses subscribe agents)
+// and the broadcast paradoxically silences everyone — the exact
+// failure mode reported in the All hands channel.
+func TestDispatch_MentionAll_FansOutToAllAgents(t *testing.T) {
+	if testQueries == nil {
+		t.Skip("database not available")
+	}
+	ctx := context.Background()
+	seed := seedChannelWithAgent(t)
+	setChannelMemberSubscribeMode(t, seed.ChannelID, seed.AgentID, "subscribe")
+
+	// "@all 大家每个人讲个笑话吧" — no specific agent in the resolved
+	// mentions array. Pre-fix, this returned 0 enqueues (the @-token
+	// trips hasExplicitMention and the subscribe agent stays quiet).
+	msg := insertHumanMessageWithMentions(t, seed.ChannelID,
+		"@all please tell a joke",
+		nil, // resolved mentions empty: @all isn't a member or agent
+	)
+
+	fe := &fakeEnqueuer{}
+	d := NewChannelDispatcher(testQueries, fe)
+	if err := d.Dispatch(ctx, msg); err != nil {
+		t.Fatal(err)
+	}
+	if len(fe.calls) != 1 {
+		t.Fatalf("@all should fan out to the subscribe agent, got %d enqueues",
+			len(fe.calls))
+	}
+	if fe.calls[0].Priority != PriorityHigh {
+		t.Errorf("priority=%d want HIGH (broadcast is treated as a directed mention)",
+			fe.calls[0].Priority)
+	}
+}
+
+// @all also fans out to mention_only agents — they normally need a
+// specific @ to fire, but @all says "everyone, including you".
+func TestDispatch_MentionAll_FiresMentionOnlyAgents(t *testing.T) {
+	if testQueries == nil {
+		t.Skip("database not available")
+	}
+	ctx := context.Background()
+	seed := seedChannelWithAgent(t)
+	setChannelMemberSubscribeMode(t, seed.ChannelID, seed.AgentID, "mention_only")
+
+	msg := insertHumanMessageWithMentions(t, seed.ChannelID,
+		"@all heads up: deploying in 5",
+		nil,
+	)
+
+	fe := &fakeEnqueuer{}
+	d := NewChannelDispatcher(testQueries, fe)
+	if err := d.Dispatch(ctx, msg); err != nil {
+		t.Fatal(err)
+	}
+	if len(fe.calls) != 1 {
+		t.Fatalf("@all must wake mention_only agents too, got %d enqueues",
+			len(fe.calls))
+	}
+}
+
+// "@allies" / "@allbright" must NOT trip the @all broadcast path —
+// the regex needs explicit token boundaries.
+func TestDispatch_MentionAll_WordBoundary_DoesNotMatchPrefix(t *testing.T) {
+	if testQueries == nil {
+		t.Skip("database not available")
+	}
+	ctx := context.Background()
+	seed := seedChannelWithAgent(t)
+	setChannelMemberSubscribeMode(t, seed.ChannelID, seed.AgentID, "subscribe")
+
+	// "@allies" should be treated as a directed call-out at a member
+	// (or unresolved attempt at one), not as a broadcast.
+	msg := insertHumanMessageWithMentions(t, seed.ChannelID,
+		"@allies should sync up",
+		nil,
+	)
+
+	fe := &fakeEnqueuer{}
+	d := NewChannelDispatcher(testQueries, fe)
+	if err := d.Dispatch(ctx, msg); err != nil {
+		t.Fatal(err)
+	}
+	// Subscribe agent is suppressed by the (unresolved) @-token, NOT
+	// promoted to broadcast. 0 enqueues is the right behavior.
+	if len(fe.calls) != 0 {
+		t.Fatalf("@allies must NOT trigger @all broadcast path, got %d enqueues",
+			len(fe.calls))
+	}
+}
