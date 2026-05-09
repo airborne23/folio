@@ -67,7 +67,7 @@ function renderPanel() {
   });
   return render(
     <QueryClientProvider client={qc}>
-      <ChannelSettingsPanel channelId="c1" />
+      <ChannelSettingsPanel channelId="c1" onClose={() => {}} />
     </QueryClientProvider>,
   );
 }

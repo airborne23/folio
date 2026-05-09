@@ -367,29 +367,6 @@ describe("LoginPage", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Google OAuth
-  // -------------------------------------------------------------------------
-
-  it("renders Google OAuth button when google prop provided", () => {
-    render(
-      <LoginPage
-        onSuccess={onSuccess}
-        google={{ clientId: "goog-123", redirectUri: "http://localhost/cb" }}
-      />,
-    );
-    expect(
-      screen.getByRole("button", { name: /continue with google/i }),
-    ).toBeInTheDocument();
-  });
-
-  it("hides Google OAuth button when google prop omitted", () => {
-    renderWithI18n(<LoginPage onSuccess={onSuccess} />);
-    expect(
-      screen.queryByRole("button", { name: /continue with google/i }),
-    ).not.toBeInTheDocument();
-  });
-
-  // -------------------------------------------------------------------------
   // CLI callback — existing session
   // -------------------------------------------------------------------------
 

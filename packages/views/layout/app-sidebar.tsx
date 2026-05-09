@@ -513,6 +513,7 @@ export function AppSidebar({ topSlot, searchSlot, headerClassName, headerStyle }
         <SidebarHeader className={cn("py-3", headerClassName)} style={headerStyle}>
           <div className="flex items-center gap-2 px-2 pb-1">
             <FolioIcon className="text-2xl" />
+            {/* eslint-disable-next-line i18next/no-literal-string -- product wordmark; not localized. */}
             <span className="font-serif text-xl font-semibold tracking-tight text-foreground group-data-[collapsible=icon]:hidden">
               folio
             </span>
@@ -957,6 +958,7 @@ function ChannelsNavSection({
       createLabel={t(($) => $.nav_create.channels)}
       numeralIndex={numeralIndex}
       useChildren={(wsId, enabled) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- the prop is named useChildren and is invoked as a hook by ExpandableNavSection.
         const { data = [] } = useQuery({ ...channelListOptions(wsId), enabled });
         return data;
       }}
@@ -991,6 +993,7 @@ function ProjectsNavSection({
       createLabel={t(($) => $.nav_create.projects)}
       numeralIndex={numeralIndex}
       useChildren={(wsId, enabled) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- the prop is named useChildren and is invoked as a hook by ExpandableNavSection.
         const { data = [] } = useQuery({ ...projectListOptions(wsId), enabled });
         return data;
       }}
@@ -1021,6 +1024,7 @@ function AutopilotsNavSection({
       createLabel={t(($) => $.nav_create.autopilots)}
       numeralIndex={numeralIndex}
       useChildren={(wsId, enabled) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- the prop is named useChildren and is invoked as a hook by ExpandableNavSection.
         const { data = [] } = useQuery({
           ...autopilotListOptions(wsId),
           enabled,
@@ -1054,6 +1058,7 @@ function AgentsNavSection({
       createLabel={t(($) => $.nav_create.agents)}
       numeralIndex={numeralIndex}
       useChildren={(wsId, enabled) => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks -- the prop is named useChildren and is invoked as a hook by ExpandableNavSection.
         const { data = [] } = useQuery({ ...agentListOptions(wsId), enabled });
         // Hide archived agents — same filter every other agent picker
         // applies; they're dead weight in a quick-jump list.

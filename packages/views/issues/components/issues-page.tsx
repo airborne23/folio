@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { ChevronRight, ListTodo } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { IssueStatus } from "@folio/core/types";
 import { Skeleton } from "@folio/ui/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
@@ -169,6 +169,7 @@ export function IssuesPage() {
        *  today's volume" beat — even when the list is empty. */}
       <header className="shrink-0 border-b px-8 pt-9 pb-7">
         <div className="mb-3 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          {/* eslint-disable-next-line i18next/no-literal-string -- decorative brand glyph; not localized. */}
           <span aria-hidden className="text-base leading-none text-brand">✻</span>
           <span className="font-medium">{dateKicker} · {t(($) => $.page.breadcrumb_title)}</span>
         </div>
@@ -192,6 +193,7 @@ export function IssuesPage() {
         {/* Content: scrollable */}
         {scopedIssues.length === 0 ? (
           <div className="flex flex-1 min-h-0 flex-col items-center justify-center gap-5 px-4 text-center">
+            {/* eslint-disable-next-line i18next/no-literal-string -- decorative brand glyph; not localized. */}
             <span aria-hidden className="font-serif text-5xl leading-none text-brand">✻</span>
             <p className="max-w-sm font-serif text-lg italic leading-relaxed text-muted-foreground">
               {t(($) => $.page.empty_hint)}

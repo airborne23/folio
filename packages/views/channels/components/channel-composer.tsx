@@ -21,10 +21,11 @@ import {
   type MentionCandidate,
 } from "./channel-mention-picker";
 
-// Token chars matching the server-side regex (\p{L}\p{N}_\-). Walking back
+// Token chars matching the server-side regex (\p{L}\p{N}_-). Walking back
 // from the cursor we accept letters/numbers (including CJK), underscore,
 // and hyphen — same vocabulary the server will tokenize.
-const MENTION_TOKEN_CHAR = /[\p{L}\p{N}_\-]/u;
+// `-` at the end of a character class is literal; no escape needed.
+const MENTION_TOKEN_CHAR = /[\p{L}\p{N}_-]/u;
 
 interface MentionMatch {
   /** Index of the `@` in the body. */
