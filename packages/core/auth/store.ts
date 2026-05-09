@@ -20,8 +20,12 @@ export interface AuthState {
   initialize: () => Promise<void>;
   sendCode: (email: string) => Promise<void>;
   verifyCode: (email: string, code: string) => Promise<User>;
-  /** No-verification signup-or-login. Backend creates the user if absent. */
-  quickSignup: (email: string, name: string) => Promise<User>;
+  /** Sign in an existing user by email. Throws ApiError(404) when no
+   *  account exists for the email. */
+  login: (email: string) => Promise<User>;
+  /** Create a new account (email + name) and sign in. Throws
+   *  ApiError(409) when the email already has an account. */
+  signup: (email: string, name: string) => Promise<User>;
   loginWithGoogle: (code: string, redirectUri: string) => Promise<User>;
   loginWithToken: (token: string) => Promise<User>;
   logout: () => void;
@@ -93,8 +97,20 @@ export function createAuthStore(options: AuthStoreOptions) {
       return user;
     },
 
-    quickSignup: async (email: string, name: string) => {
-      const { token, user } = await api.quickSignup(email, name);
+    login: async (email: string) => {
+      const { token, user } = await api.login(email);
+      if (!cookieAuth) {
+        storage.setItem("folio_token", token);
+        api.setToken(token);
+      }
+      onLogin?.();
+      identifyAnalytics(user.id, { email: user.email, name: user.name });
+      set({ user });
+      return user;
+    },
+
+    signup: async (email: string, name: string) => {
+      const { token, user } = await api.signup(email, name);
       if (!cookieAuth) {
         storage.setItem("folio_token", token);
         api.setToken(token);

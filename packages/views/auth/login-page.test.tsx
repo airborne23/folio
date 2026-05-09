@@ -23,12 +23,26 @@ function renderWithI18n(ui: ReactElement) {
   return render(ui, { wrapper: I18nWrapper });
 }
 
+/**
+ * The mode tabs and the submit button reuse the same i18n strings ("Sign
+ * in", "Create account"), so a bare role query matches both. This helper
+ * picks just the form-submit one — the click target most assertions
+ * actually want.
+ */
+function getSubmitButton(name: RegExp) {
+  return screen
+    .getAllByRole("button", { name })
+    .find((b) => b.getAttribute("type") === "submit");
+}
+
 // ---------------------------------------------------------------------------
 // Hoisted mocks
 // ---------------------------------------------------------------------------
 
-const mockStoreQuickSignup = vi.hoisted(() => vi.fn());
-const mockApiQuickSignup = vi.hoisted(() => vi.fn());
+const mockStoreLogin = vi.hoisted(() => vi.fn());
+const mockStoreSignup = vi.hoisted(() => vi.fn());
+const mockApiLogin = vi.hoisted(() => vi.fn());
+const mockApiSignup = vi.hoisted(() => vi.fn());
 const mockApiListWorkspaces = vi.hoisted(() => vi.fn());
 const mockApiSetToken = vi.hoisted(() => vi.fn());
 const mockApiGetMe = vi.hoisted(() => vi.fn());
@@ -44,28 +58,37 @@ vi.mock("@tanstack/react-query", async () => {
 
 vi.mock("@folio/core/auth", () => ({
   useAuthStore: Object.assign(
-    // Zustand hook form — component may call useAuthStore(selector)
     (selector?: (s: unknown) => unknown) => {
-      const state = { quickSignup: mockStoreQuickSignup };
+      const state = { login: mockStoreLogin, signup: mockStoreSignup };
       return selector ? selector(state) : state;
     },
     {
       getState: () => ({
-        quickSignup: mockStoreQuickSignup,
+        login: mockStoreLogin,
+        signup: mockStoreSignup,
       }),
     },
   ),
 }));
 
-vi.mock("@folio/core/api", () => ({
-  api: {
-    listWorkspaces: mockApiListWorkspaces,
-    quickSignup: mockApiQuickSignup,
-    setToken: mockApiSetToken,
-    getMe: mockApiGetMe,
-    issueCliToken: mockApiIssueCliToken,
-  },
-}));
+// Real ApiError class so the page's instanceof check fires; api methods
+// are mocked individually.
+vi.mock("@folio/core/api", async () => {
+  const actual = await vi.importActual<typeof import("@folio/core/api")>(
+    "@folio/core/api",
+  );
+  return {
+    ...actual,
+    api: {
+      listWorkspaces: mockApiListWorkspaces,
+      login: mockApiLogin,
+      signup: mockApiSignup,
+      setToken: mockApiSetToken,
+      getMe: mockApiGetMe,
+      issueCliToken: mockApiIssueCliToken,
+    },
+  };
+});
 
 vi.mock("@folio/core/workspace/queries", () => ({
   workspaceKeys: { list: () => ["workspaces", "list"] },
@@ -78,6 +101,7 @@ vi.mock("@folio/core/types", () => ({}));
 // ---------------------------------------------------------------------------
 
 import { LoginPage, validateCliCallback } from "./login-page";
+import { ApiError } from "@folio/core/api";
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -99,26 +123,21 @@ describe("LoginPage", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Email + name form rendering
+  // Default render — Sign in mode
   // -------------------------------------------------------------------------
 
-  it("renders the welcome form with email + name fields and the Begin button", () => {
+  it("renders Sign in mode by default with the email-only form", () => {
     renderWithI18n(<LoginPage onSuccess={onSuccess} />);
     expect(screen.getByText(/welcome to folio/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /^begin$/i }),
-    ).toBeInTheDocument();
+    // Name field is signup-only.
+    expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
+    expect(getSubmitButton(/^sign in$/i)).toBeDefined();
   });
 
-  // -------------------------------------------------------------------------
-  // Email enables / disables the Begin button
-  // -------------------------------------------------------------------------
-
-  it("Begin button toggles enabled state with the email field", async () => {
+  it("Sign in button is disabled until email has a value", async () => {
     renderWithI18n(<LoginPage onSuccess={onSuccess} />);
-    const button = screen.getByRole("button", { name: /^begin$/i });
+    const button = getSubmitButton(/^sign in$/i)!;
     expect(button).toBeDisabled();
 
     const user = userEvent.setup();
@@ -129,27 +148,21 @@ describe("LoginPage", () => {
   });
 
   // -------------------------------------------------------------------------
-  // quickSignup — non-CLI path
+  // Sign in flow (existing user)
   // -------------------------------------------------------------------------
 
-  it("calls store.quickSignup, seeds workspace list, then onSuccess", async () => {
-    mockStoreQuickSignup.mockResolvedValueOnce({ id: "u-1" });
+  it("calls store.login, seeds workspace list, then onSuccess", async () => {
+    mockStoreLogin.mockResolvedValueOnce({ id: "u-1" });
     mockApiListWorkspaces.mockResolvedValueOnce([{ id: "ws-1" }]);
     renderWithI18n(<LoginPage onSuccess={onSuccess} />);
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.type(screen.getByLabelText(/name/i), "Test");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.click(getSubmitButton(/^sign in$/i)!);
 
     await waitFor(() => {
-      expect(mockStoreQuickSignup).toHaveBeenCalledWith(
-        "test@example.com",
-        "Test",
-      );
+      expect(mockStoreLogin).toHaveBeenCalledWith("test@example.com");
       expect(mockApiListWorkspaces).toHaveBeenCalled();
-      // The workspace list is seeded into React Query so onSuccess can read
-      // it synchronously to compute a destination URL.
       expect(mockSetQueryData).toHaveBeenCalledWith(
         ["workspaces", "list"],
         [{ id: "ws-1" }],
@@ -158,46 +171,89 @@ describe("LoginPage", () => {
     });
   });
 
-  it("shows the error message when quickSignup rejects with an Error", async () => {
-    mockStoreQuickSignup.mockRejectedValueOnce(new Error("Rate limited"));
+  it("shows the cross-link nudge when login returns 404", async () => {
+    mockStoreLogin.mockRejectedValueOnce(new ApiError("not found", 404, ""));
     renderWithI18n(<LoginPage onSuccess={onSuccess} />);
 
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.type(screen.getByLabelText(/email/i), "ghost@example.com");
+    await user.click(getSubmitButton(/^sign in$/i)!);
 
     await waitFor(() => {
-      expect(screen.getByText("Rate limited")).toBeInTheDocument();
+      // Translated copy: "No account for this email — create one to get started."
+      expect(screen.getByText(/no account for this email/i)).toBeInTheDocument();
     });
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it("shows a generic error when quickSignup throws a non-Error value", async () => {
-    mockStoreQuickSignup.mockRejectedValueOnce("boom");
+  it("shows the loading label while login is in flight", async () => {
+    mockStoreLogin.mockReturnValueOnce(new Promise(() => {}));
     renderWithI18n(<LoginPage onSuccess={onSuccess} />);
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.click(getSubmitButton(/^sign in$/i)!);
+
+    expect(screen.getByText(/signing in/i)).toBeInTheDocument();
+  });
+
+  // -------------------------------------------------------------------------
+  // Mode toggle and Create account flow
+  // -------------------------------------------------------------------------
+
+  it("switching to Create account reveals the name field", async () => {
+    renderWithI18n(<LoginPage onSuccess={onSuccess} />);
+
+    const user = userEvent.setup();
+    // The mode tab uses tab_signup string → "Create account"
+    await user.click(screen.getByRole("button", { name: /^create account$/i, pressed: false }));
+
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
+    // The submit button now reads "Create account" — same string but a
+    // different element (the form submit, not the tab). It's disabled
+    // until both fields are filled.
+    const submitButtons = screen.getAllByRole("button", { name: /^create account$/i });
+    const submit = submitButtons.find((b) => b.getAttribute("type") === "submit");
+    expect(submit).toBeDefined();
+  });
+
+  it("calls store.signup with email and name on Create account submit", async () => {
+    mockStoreSignup.mockResolvedValueOnce({ id: "u-1" });
+    mockApiListWorkspaces.mockResolvedValueOnce([{ id: "ws-1" }]);
+    renderWithI18n(<LoginPage onSuccess={onSuccess} initialMode="signup" />);
+
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/email/i), "test@example.com");
+    await user.type(screen.getByLabelText(/name/i), "Test");
+    const submit = screen
+      .getAllByRole("button", { name: /^create account$/i })
+      .find((b) => b.getAttribute("type") === "submit")!;
+    await user.click(submit);
 
     await waitFor(() => {
-      // auth.json $.errors.send_failed → "Failed to send code." is the
-      // current generic-error fallback string.
-      expect(screen.getByText(/failed to send code/i)).toBeInTheDocument();
+      expect(mockStoreSignup).toHaveBeenCalledWith("test@example.com", "Test");
+      expect(onSuccess).toHaveBeenCalled();
     });
   });
 
-  it("shows the loading label while quickSignup is in flight", async () => {
-    // Never resolve so loading stays true
-    mockStoreQuickSignup.mockReturnValueOnce(new Promise(() => {}));
-    renderWithI18n(<LoginPage onSuccess={onSuccess} />);
+  it("shows the cross-link nudge when signup returns 409", async () => {
+    mockStoreSignup.mockRejectedValueOnce(new ApiError("conflict", 409, ""));
+    renderWithI18n(<LoginPage onSuccess={onSuccess} initialMode="signup" />);
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.type(screen.getByLabelText(/name/i), "Test");
+    const submit = screen
+      .getAllByRole("button", { name: /^create account$/i })
+      .find((b) => b.getAttribute("type") === "submit")!;
+    await user.click(submit);
 
-    // auth.json $.signin.sending → "Signing you in…"
-    expect(screen.getByText(/signing you in/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/already exists.*sign in instead/i),
+      ).toBeInTheDocument();
+    });
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
   // -------------------------------------------------------------------------
@@ -206,7 +262,6 @@ describe("LoginPage", () => {
 
   it("shows cli_confirm step when existing session + cliCallback", async () => {
     localStorage.setItem("folio_token", "existing-jwt");
-    // Cookie attempt fails first, then localStorage fallback succeeds
     mockApiGetMe
       .mockRejectedValueOnce(new Error("no cookie"))
       .mockResolvedValueOnce({
@@ -295,12 +350,7 @@ describe("LoginPage", () => {
     expect(screen.getByText(/welcome to folio/i)).toBeInTheDocument();
   });
 
-  // -------------------------------------------------------------------------
-  // CLI callback — cookie-based session (no localStorage token)
-  // -------------------------------------------------------------------------
-
   it("detects cookie-based session and shows cli_confirm when no localStorage token", async () => {
-    // No localStorage token — getMe succeeds via HttpOnly cookie
     mockApiGetMe.mockResolvedValueOnce({
       id: "u-1",
       email: "cookie@example.com",
@@ -354,11 +404,11 @@ describe("LoginPage", () => {
   });
 
   // -------------------------------------------------------------------------
-  // CLI callback — quickSignup redirect (no existing session)
+  // CLI callback — fresh login + signup paths (no existing session)
   // -------------------------------------------------------------------------
 
-  it("CLI quickSignup mints a token and redirects to the callback URL", async () => {
-    mockApiQuickSignup.mockResolvedValueOnce({
+  it("CLI sign-in mints a token and redirects to the callback URL", async () => {
+    mockApiLogin.mockResolvedValueOnce({
       token: "new-jwt-token",
       user: { id: "u-1", email: "cli@example.com", name: "CLI User" },
     });
@@ -374,23 +424,17 @@ describe("LoginPage", () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "cli@example.com");
-    await user.type(screen.getByLabelText(/name/i), "CLI User");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.click(getSubmitButton(/^sign in$/i)!);
 
     await waitFor(() => {
-      expect(mockApiQuickSignup).toHaveBeenCalledWith(
-        "cli@example.com",
-        "CLI User",
-      );
+      expect(mockApiLogin).toHaveBeenCalledWith("cli@example.com");
       expect(onTokenObtained).toHaveBeenCalled();
       expect(window.location.href).toContain(
         "http://localhost:9876/callback?token=new-jwt-token&state=xyz",
       );
     });
 
-    // Store-level quickSignup is bypassed on the CLI path.
-    expect(mockStoreQuickSignup).not.toHaveBeenCalled();
-    // onSuccess should NOT fire on the CLI path — the redirect handles it.
+    expect(mockStoreLogin).not.toHaveBeenCalled();
     expect(onSuccess).not.toHaveBeenCalled();
   });
 
@@ -417,8 +461,8 @@ describe("LoginPage", () => {
   // onTokenObtained callback (non-CLI path)
   // -------------------------------------------------------------------------
 
-  it("calls onTokenObtained after a successful non-CLI quickSignup", async () => {
-    mockStoreQuickSignup.mockResolvedValueOnce({ id: "u-1" });
+  it("calls onTokenObtained after a successful non-CLI login", async () => {
+    mockStoreLogin.mockResolvedValueOnce({ id: "u-1" });
     mockApiListWorkspaces.mockResolvedValueOnce([{ id: "ws-1" }]);
     const onTokenObtained = vi.fn();
 
@@ -428,7 +472,7 @@ describe("LoginPage", () => {
 
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email/i), "test@example.com");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+    await user.click(getSubmitButton(/^sign in$/i)!);
 
     await waitFor(() => {
       expect(onTokenObtained).toHaveBeenCalled();

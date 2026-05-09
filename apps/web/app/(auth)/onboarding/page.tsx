@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@folio/core/auth";
+import { completeOnboarding } from "@folio/core/onboarding";
 import {
   paths,
   resolvePostAuthDestination,
@@ -29,6 +30,10 @@ export default function OnboardingPage() {
     ...workspaceListOptions(),
     enabled: !!user,
   });
+  // Single-shot guard: prevents the inconsistent-state recovery branch
+  // below from firing repeatedly while completeOnboarding is in flight or
+  // while the user/workspace queries are re-resolving on the next render.
+  const recoveryFiredRef = useRef(false);
 
   useEffect(() => {
     if (isLoading || !user) {
@@ -36,10 +41,35 @@ export default function OnboardingPage() {
       return;
     }
     if (!workspacesFetched) return;
-    // Bounce out only when onboarding doesn't apply — the user is already
-    // onboarded. With the simplified single-step flow, a user that has at
-    // least one workspace is also considered "done" (the only step the
-    // flow had was creating a workspace), so route them straight to it.
+    // Recovery path for the "has-workspace, not-onboarded" inconsistency.
+    // Backend invariant says it shouldn't happen, but it does in practice
+    // (manual DB seeds, partial migrations, the imported-via-SQL case
+    // we hit during deploy). Without this branch, resolvePostAuthDestination
+    // routes back to /onboarding because !onboarded — but the page below
+    // returns null because workspaces.length > 0, leaving a blank screen
+    // and an infinite router.replace loop. Backfill onboarded_at so the
+    // user's profile matches what the data already implies, then send
+    // them into their workspace.
+    const firstWorkspace = workspaces[0];
+    if (!hasOnboarded && firstWorkspace) {
+      if (recoveryFiredRef.current) return;
+      recoveryFiredRef.current = true;
+      void (async () => {
+        try {
+          await completeOnboarding("skip_existing");
+        } catch (err) {
+          // Best-effort. Log so a real backend failure surfaces in the
+          // browser console without blocking the redirect — the user
+          // would rather land in their workspace than be stuck here.
+          console.warn(
+            "onboarding: failed to backfill onboarded_at (continuing redirect)",
+            err,
+          );
+        }
+        router.replace(paths.workspace(firstWorkspace.slug).issues());
+      })();
+      return;
+    }
     if (hasOnboarded || workspaces.length > 0) {
       router.replace(resolvePostAuthDestination(workspaces, hasOnboarded));
     }

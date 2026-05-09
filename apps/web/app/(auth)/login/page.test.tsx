@@ -21,20 +21,31 @@ function createWrapper() {
   );
 }
 
+/** The mode tabs and the form-submit button reuse the same i18n strings,
+ *  so a bare `getByRole` matches both. Pick just the submit. */
+function getSubmitButton(name: RegExp) {
+  return screen
+    .getAllByRole("button", { name })
+    .find((b) => b.getAttribute("type") === "submit");
+}
+
 const {
-  mockQuickSignup,
+  mockLogin,
+  mockSignup,
   mockListWorkspaces,
   searchParamsState,
   authStateRef,
   mockRouterPush,
   mockRouterReplace,
 } = vi.hoisted(() => ({
-  mockQuickSignup: vi.fn(),
+  mockLogin: vi.fn(),
+  mockSignup: vi.fn(),
   mockListWorkspaces: vi.fn(),
   searchParamsState: { params: new URLSearchParams() },
   authStateRef: {
     state: {
-      quickSignup: vi.fn(),
+      login: vi.fn(),
+      signup: vi.fn(),
       user: null as null | { id: string; email: string; onboarded_at: string | null },
       isLoading: false,
     },
@@ -49,7 +60,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => searchParamsState.params,
 }));
 
-// Shared LoginPage uses getState().quickSignup; web wrapper uses
+// Shared LoginPage uses getState().login/signup; web wrapper uses
 // useAuthStore((s) => s.user/isLoading). Keep the real sanitizeNextUrl so
 // the redirect-sanitization rules are exercised rather than silently
 // drifting behind a mock reimplementation.
@@ -58,7 +69,8 @@ vi.mock("@folio/core/auth", async () => {
     await vi.importActual<typeof import("@folio/core/auth")>(
       "@folio/core/auth",
     );
-  authStateRef.state.quickSignup = mockQuickSignup;
+  authStateRef.state.login = mockLogin;
+  authStateRef.state.signup = mockSignup;
   const useAuthStore = Object.assign(
     (selector: (s: typeof authStateRef.state) => unknown) =>
       selector(authStateRef.state),
@@ -71,16 +83,23 @@ vi.mock("@/features/auth/auth-cookie", () => ({
   setLoggedInCookie: vi.fn(),
 }));
 
-vi.mock("@folio/core/api", () => ({
-  api: {
-    listWorkspaces: mockListWorkspaces,
-    listMyInvitations: vi.fn().mockResolvedValue([]),
-    quickSignup: vi.fn(),
-    setToken: vi.fn(),
-    getMe: vi.fn(),
-    issueCliToken: vi.fn(),
-  },
-}));
+vi.mock("@folio/core/api", async () => {
+  const actual = await vi.importActual<typeof import("@folio/core/api")>(
+    "@folio/core/api",
+  );
+  return {
+    ...actual,
+    api: {
+      listWorkspaces: mockListWorkspaces,
+      listMyInvitations: vi.fn().mockResolvedValue([]),
+      login: vi.fn(),
+      signup: vi.fn(),
+      setToken: vi.fn(),
+      getMe: vi.fn(),
+      issueCliToken: vi.fn(),
+    },
+  };
+});
 
 import LoginPage from "./page";
 
@@ -93,64 +112,58 @@ describe("LoginPage", () => {
     mockListWorkspaces.mockResolvedValue([]);
   });
 
-  it("renders the welcome form with email + name inputs and the Begin button", () => {
+  it("renders Sign in mode by default with the email-only form", () => {
     render(<LoginPage />, { wrapper: createWrapper() });
 
     expect(screen.getByText(/welcome to folio/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /^begin$/i }),
-    ).toBeInTheDocument();
+    expect(screen.queryByLabelText(/name/i)).not.toBeInTheDocument();
+    expect(getSubmitButton(/^sign in$/i)).toBeDefined();
   });
 
-  it("does not call quickSignup when email is empty (button stays disabled)", async () => {
+  it("does not call login when email is empty (button stays disabled)", async () => {
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    const button = screen.getByRole("button", { name: /^begin$/i });
+    const button = getSubmitButton(/^sign in$/i)!;
     expect(button).toBeDisabled();
     await user.click(button);
-    expect(mockQuickSignup).not.toHaveBeenCalled();
+    expect(mockLogin).not.toHaveBeenCalled();
   });
 
-  it("calls quickSignup with email and name on submit", async () => {
-    mockQuickSignup.mockResolvedValueOnce({ id: "u-1" });
+  it("calls login with email on Sign in submit", async () => {
+    mockLogin.mockResolvedValueOnce({ id: "u-1" });
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
+
+    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
+    await user.click(getSubmitButton(/^sign in$/i)!);
+
+    await waitFor(() => {
+      expect(mockLogin).toHaveBeenCalledWith("test@folio.ai");
+    });
+  });
+
+  it("calls signup with email + name on Create account submit", async () => {
+    mockSignup.mockResolvedValueOnce({ id: "u-1" });
+    const user = userEvent.setup();
+    render(<LoginPage />, { wrapper: createWrapper() });
+
+    // Switch to Create account tab.
+    await user.click(
+      screen.getByRole("button", { name: /^create account$/i, pressed: false }),
+    );
 
     await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
     await user.type(screen.getByLabelText(/name/i), "Test");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
+
+    const submit = screen
+      .getAllByRole("button", { name: /^create account$/i })
+      .find((b) => b.getAttribute("type") === "submit")!;
+    await user.click(submit);
 
     await waitFor(() => {
-      expect(mockQuickSignup).toHaveBeenCalledWith("test@folio.ai", "Test");
-    });
-  });
-
-  it("shows the loading label while quickSignup is in flight", async () => {
-    mockQuickSignup.mockReturnValueOnce(new Promise(() => {}));
-    const user = userEvent.setup();
-    render(<LoginPage />, { wrapper: createWrapper() });
-
-    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/signing you in/i)).toBeInTheDocument();
-    });
-  });
-
-  it("surfaces the error message when quickSignup rejects", async () => {
-    mockQuickSignup.mockRejectedValueOnce(new Error("Network error"));
-    const user = userEvent.setup();
-    render(<LoginPage />, { wrapper: createWrapper() });
-
-    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: /^begin$/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Network error")).toBeInTheDocument();
+      expect(mockSignup).toHaveBeenCalledWith("test@folio.ai", "Test");
     });
   });
 

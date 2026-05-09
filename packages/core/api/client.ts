@@ -321,12 +321,27 @@ export class ApiClient {
   }
 
   /**
-   * No-verification signup-or-login. Backend creates the user if missing,
-   * updates their display name to `name`, and returns a session token + user.
-   * No email round-trip — appropriate for dev / demo / private deployments.
+   * Sign in an existing user by email. The server returns 404 when there
+   * is no account for the email — callers should surface that as a
+   * "switch to Create account?" suggestion rather than a generic error.
+   * No verification code, no password — appropriate for dev / demo /
+   * private deployments only.
    */
-  async quickSignup(email: string, name: string): Promise<LoginResponse> {
-    return this.fetch("/auth/quick-signup", {
+  async login(email: string): Promise<LoginResponse> {
+    return this.fetch("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  /**
+   * Create a new account and sign in. The server returns 409 when the
+   * email is already registered — callers should surface that as a
+   * "switch to Sign in?" suggestion. Both fields are required; an empty
+   * name yields 400 from the server rather than a half-set-up account.
+   */
+  async signup(email: string, name: string): Promise<LoginResponse> {
+    return this.fetch("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ email, name }),
     });
