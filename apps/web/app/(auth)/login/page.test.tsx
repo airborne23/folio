@@ -22,44 +22,43 @@ function createWrapper() {
 }
 
 const {
-  mockSendCode,
-  mockVerifyCode,
-  mockIssueCliToken,
+  mockQuickSignup,
+  mockListWorkspaces,
   searchParamsState,
   authStateRef,
+  mockRouterPush,
+  mockRouterReplace,
 } = vi.hoisted(() => ({
-  mockSendCode: vi.fn(),
-  mockVerifyCode: vi.fn(),
-  mockIssueCliToken: vi.fn(),
+  mockQuickSignup: vi.fn(),
+  mockListWorkspaces: vi.fn(),
   searchParamsState: { params: new URLSearchParams() },
   authStateRef: {
     state: {
-      sendCode: vi.fn(),
-      verifyCode: vi.fn(),
-      user: null as null | { id: string; email: string },
+      quickSignup: vi.fn(),
+      user: null as null | { id: string; email: string; onboarded_at: string | null },
       isLoading: false,
     },
   },
+  mockRouterPush: vi.fn(),
+  mockRouterReplace: vi.fn(),
 }));
 
-// Mock next/navigation
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
   usePathname: () => "/login",
   useSearchParams: () => searchParamsState.params,
 }));
 
-// Mock auth store — shared LoginPage uses getState().sendCode/verifyCode,
-// web wrapper uses useAuthStore((s) => s.user/isLoading). Keep the real
-// sanitizeNextUrl so the redirect-sanitization rules are exercised rather
-// than silently drifting behind a mock reimplementation.
+// Shared LoginPage uses getState().quickSignup; web wrapper uses
+// useAuthStore((s) => s.user/isLoading). Keep the real sanitizeNextUrl so
+// the redirect-sanitization rules are exercised rather than silently
+// drifting behind a mock reimplementation.
 vi.mock("@folio/core/auth", async () => {
   const actual =
     await vi.importActual<typeof import("@folio/core/auth")>(
       "@folio/core/auth",
     );
-  authStateRef.state.sendCode = mockSendCode;
-  authStateRef.state.verifyCode = mockVerifyCode;
+  authStateRef.state.quickSignup = mockQuickSignup;
   const useAuthStore = Object.assign(
     (selector: (s: typeof authStateRef.state) => unknown) =>
       selector(authStateRef.state),
@@ -68,19 +67,18 @@ vi.mock("@folio/core/auth", async () => {
   return { ...actual, useAuthStore };
 });
 
-// Mock auth-cookie
 vi.mock("@/features/auth/auth-cookie", () => ({
   setLoggedInCookie: vi.fn(),
 }));
 
-// Mock api
 vi.mock("@folio/core/api", () => ({
   api: {
-    listWorkspaces: vi.fn().mockResolvedValue([]),
-    verifyCode: vi.fn(),
+    listWorkspaces: mockListWorkspaces,
+    listMyInvitations: vi.fn().mockResolvedValue([]),
+    quickSignup: vi.fn(),
     setToken: vi.fn(),
     getMe: vi.fn(),
-    issueCliToken: mockIssueCliToken,
+    issueCliToken: vi.fn(),
   },
 }));
 
@@ -92,116 +90,84 @@ describe("LoginPage", () => {
     searchParamsState.params = new URLSearchParams();
     authStateRef.state.user = null;
     authStateRef.state.isLoading = false;
+    mockListWorkspaces.mockResolvedValue([]);
   });
 
-  it("renders login form with email input and continue button", () => {
+  it("renders the welcome form with email + name inputs and the Begin button", () => {
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    expect(screen.getByText("Sign in to Folio")).toBeInTheDocument();
-    expect(screen.getByText("Enter your email to get a login code")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
+    expect(screen.getByText(/welcome to folio/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/name/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Continue" })
+      screen.getByRole("button", { name: /^begin$/i }),
     ).toBeInTheDocument();
   });
 
-  it("does not call sendCode when email is empty", async () => {
+  it("does not call quickSignup when email is empty (button stays disabled)", async () => {
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    await user.click(screen.getByRole("button", { name: "Continue" }));
-    expect(mockSendCode).not.toHaveBeenCalled();
+    const button = screen.getByRole("button", { name: /^begin$/i });
+    expect(button).toBeDisabled();
+    await user.click(button);
+    expect(mockQuickSignup).not.toHaveBeenCalled();
   });
 
-  it("calls sendCode with email on submit", async () => {
-    mockSendCode.mockResolvedValueOnce(undefined);
+  it("calls quickSignup with email and name on submit", async () => {
+    mockQuickSignup.mockResolvedValueOnce({ id: "u-1" });
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    await user.type(screen.getByLabelText("Email"), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
+    await user.type(screen.getByLabelText(/name/i), "Test");
+    await user.click(screen.getByRole("button", { name: /^begin$/i }));
 
     await waitFor(() => {
-      expect(mockSendCode).toHaveBeenCalledWith("test@folio.ai");
+      expect(mockQuickSignup).toHaveBeenCalledWith("test@folio.ai", "Test");
     });
   });
 
-  it("shows 'Sending code...' while submitting", async () => {
-    mockSendCode.mockReturnValueOnce(new Promise(() => {}));
+  it("shows the loading label while quickSignup is in flight", async () => {
+    mockQuickSignup.mockReturnValueOnce(new Promise(() => {}));
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    await user.type(screen.getByLabelText("Email"), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
+    await user.click(screen.getByRole("button", { name: /^begin$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Sending code...")).toBeInTheDocument();
+      expect(screen.getByText(/signing you in/i)).toBeInTheDocument();
     });
   });
 
-  it("shows verification code step after sending code", async () => {
-    mockSendCode.mockResolvedValueOnce(undefined);
+  it("surfaces the error message when quickSignup rejects", async () => {
+    mockQuickSignup.mockRejectedValueOnce(new Error("Network error"));
     const user = userEvent.setup();
     render(<LoginPage />, { wrapper: createWrapper() });
 
-    await user.type(screen.getByLabelText("Email"), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: "Continue" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Check your email")).toBeInTheDocument();
-    });
-  });
-
-  it("shows error when sendCode fails", async () => {
-    mockSendCode.mockRejectedValueOnce(new Error("Network error"));
-    const user = userEvent.setup();
-    render(<LoginPage />, { wrapper: createWrapper() });
-
-    await user.type(screen.getByLabelText("Email"), "test@folio.ai");
-    await user.click(screen.getByRole("button", { name: "Continue" }));
+    await user.type(screen.getByLabelText(/email/i), "test@folio.ai");
+    await user.click(screen.getByRole("button", { name: /^begin$/i }));
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
     });
   });
 
-  // Regression: MUL-1080 — if the user is already authenticated on the web
-  // and the Desktop app redirects them to /login?platform=desktop, the web
-  // must exchange the cookie session for a bearer token and hand it off via
-  // the folio:// deep link, not silently redirect to the workspace page.
-  it("mints a token and deep-links to Desktop when already logged in with platform=desktop", async () => {
-    searchParamsState.params = new URLSearchParams({ platform: "desktop" });
-    authStateRef.state.user = { id: "u1", email: "test@folio.ai" };
-    mockIssueCliToken.mockImplementation(() =>
-      Promise.resolve({ token: "handoff-jwt" }),
-    );
+  // Regression: an already-authenticated user landing on /login should be
+  // bounced to their post-auth destination immediately, rather than seeing
+  // the welcome form. The CLI callback flow is the single exception (handled
+  // by the shared LoginPage's confirm step).
+  it("redirects already-logged-in users away from /login", async () => {
+    authStateRef.state.user = {
+      id: "u-1",
+      email: "test@folio.ai",
+      onboarded_at: "2026-05-01T00:00:00Z",
+    };
+    render(<LoginPage />, { wrapper: createWrapper() });
 
-    const hrefSetter = vi.fn();
-    const originalLocation = window.location;
-    Object.defineProperty(window, "location", {
-      configurable: true,
-      value: { ...originalLocation, set href(value: string) { hrefSetter(value); } },
+    await waitFor(() => {
+      expect(mockRouterReplace).toHaveBeenCalled();
     });
-
-    try {
-      render(<LoginPage />, { wrapper: createWrapper() });
-
-      await waitFor(() => {
-        expect(mockIssueCliToken).toHaveBeenCalledTimes(1);
-      });
-      await waitFor(() => {
-        expect(hrefSetter).toHaveBeenCalledWith(
-          "folio://auth/callback?token=handoff-jwt",
-        );
-      });
-      expect(
-        await screen.findByRole("button", { name: "Open Folio Desktop" }),
-      ).toBeInTheDocument();
-    } finally {
-      Object.defineProperty(window, "location", {
-        configurable: true,
-        value: originalLocation,
-      });
-    }
   });
 });

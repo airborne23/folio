@@ -411,7 +411,9 @@ describe("IssuesPage (shared)", () => {
 
     renderWithQuery(<IssuesPage />);
 
-    await screen.findByText("Issues");
+    // The page renders "Issues" three times (breadcrumb, kicker, h1) — match
+    // any of them rather than asserting uniqueness, which is incidental.
+    await screen.findAllByText("Issues");
     expect(screen.getByText("Test WS")).toBeInTheDocument();
   });
 
@@ -420,8 +422,9 @@ describe("IssuesPage (shared)", () => {
 
     renderWithQuery(<IssuesPage />);
 
-    await screen.findByText("No issues yet");
-    expect(screen.getByText("Create an issue to get started.")).toBeInTheDocument();
+    // The redesigned empty state is a centered ✻ glyph + the empty_hint
+    // copy — there is no separate "No issues yet" heading any more.
+    await screen.findByText("Create an issue to get started.");
   });
 
   it("shows scope tab buttons", async () => {
