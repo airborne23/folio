@@ -1,0 +1,129 @@
+---
+title: CLI command reference
+description: One-page overview of every top-level Folio CLI command. For full usage, run `folio <command> --help`.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+The Folio CLI mirrors almost everything the Web UI can do (create [issues](/issues), assign [agents](/agents), start the [daemon](/daemon-runtimes), and more). This page lists every top-level command with a one-line description. For the full set of flags and examples, run `folio <command> --help`.
+
+## Getting authenticated
+
+Run this the first time you use the CLI to obtain a **personal access token (PAT)**:
+
+```bash
+folio login
+```
+
+Your browser opens automatically. After you approve in the web app, the CLI saves the PAT (prefixed with `mul_`) to `~/.folio/config.json`. Every subsequent command authenticates with that PAT.
+
+<Callout type="tip">
+For CI or headless environments, skip the browser flow: create a PAT in the web app under **Settings → Personal Access Tokens**, then run `folio login --token <mul_...>` to supply it directly.
+</Callout>
+
+For the difference between token types, see [Authentication and tokens](/auth-tokens).
+
+## Auth and setup
+
+| Command | Purpose |
+|---|---|
+| `folio login` | Log in and save a PAT |
+| `folio auth status` | Show current login status, user, and workspace |
+| `folio auth logout` | Clear the local PAT |
+| `folio setup cloud` | One-shot setup for Folio Cloud (login + install daemon) |
+| `folio setup self-host` | One-shot setup for a self-hosted backend |
+
+## Workspaces and members
+
+| Command | Purpose |
+|---|---|
+| `folio workspace list` | List every workspace you can access |
+| `folio workspace get <slug>` | Show details for one workspace |
+| `folio workspace members` | List members of the current workspace |
+
+## Issues and projects
+
+| Command | Purpose |
+|---|---|
+| `folio issue list` | List issues |
+| `folio issue get <id>` | Show a single issue |
+| `folio issue create --title "..."` | Create a new issue |
+| `folio issue update <id> ...` | Update an issue (status, priority, assignee, etc.) |
+| `folio issue assign <id> --agent <slug>` | Assign to an agent (triggers a task immediately) |
+| `folio issue status <id> --set <status>` | Shortcut to change status |
+| `folio issue search <query>` | Keyword search |
+| `folio issue runs <id>` | Show agent runs on an issue |
+| `folio issue rerun <id>` | Rerun the most recent agent task |
+| `folio issue comment <id> ...` | Nested: view / post comments |
+| `folio issue subscriber <id> ...` | Nested: subscribe / unsubscribe |
+| `folio project list/get/create/update/delete/status` | Project CRUD |
+
+## Agents and skills
+
+| Command | Purpose |
+|---|---|
+| `folio agent list` | List the workspace's agents |
+| `folio agent get <slug>` | Show an agent's configuration |
+| `folio agent create ...` | Create an agent |
+| `folio agent update <slug> ...` | Update an agent |
+| `folio agent archive <slug>` | Archive |
+| `folio agent restore <slug>` | Restore an archived agent |
+| `folio agent tasks <slug>` | Show an agent's task history |
+| `folio agent skills ...` | Nested: attach / detach skills |
+| `folio skill list/get/create/update/delete` | Skill CRUD |
+| `folio skill import ...` | Import a skill from GitHub, ClawHub, or the local machine |
+| `folio skill files ...` | Nested: manage a skill's files |
+
+## Autopilots
+
+| Command | Purpose |
+|---|---|
+| `folio autopilot list` | List every autopilot in the workspace |
+| `folio autopilot get <id>` | Show a single autopilot |
+| `folio autopilot create ...` | Create an autopilot |
+| `folio autopilot update <id> ...` | Update |
+| `folio autopilot delete <id>` | Delete |
+| `folio autopilot runs <id>` | Show run history |
+| `folio autopilot trigger <id>` | Trigger a run manually |
+
+## Daemon and runtimes
+
+| Command | Purpose |
+|---|---|
+| `folio daemon start` | Start the daemon (background by default; add `--foreground` to run in the foreground) |
+| `folio daemon stop` | Stop the daemon |
+| `folio daemon restart` | Restart the daemon |
+| `folio daemon status` | Check whether the daemon is online and its concurrency |
+| `folio daemon logs` | View daemon logs |
+| `folio runtime list` | List runtimes in the current workspace |
+| `folio runtime usage` | Show resource usage |
+| `folio runtime activity` | Recent activity log |
+| `folio runtime ping <id>` | Ping a runtime to check it's online |
+| `folio runtime update <id> ...` | Update a runtime's configuration |
+
+## Miscellaneous
+
+| Command | Purpose |
+|---|---|
+| `folio repo checkout <url>` | Clone a repo locally for agents to use |
+| `folio config` | View or edit local CLI configuration |
+| `folio version` | Print the CLI version |
+| `folio update` | Upgrade the CLI to the latest release |
+| `folio attachment download <id>` | Download an attachment from an issue or comment |
+
+## Getting full flags
+
+Every command supports `--help`:
+
+```bash
+folio issue create --help
+folio agent update --help
+```
+
+v2 will ship a dedicated detailed reference page for each command.
+
+## Next steps
+
+- [Authentication and tokens](/auth-tokens) — PAT vs. JWT vs. daemon token
+- [Daemon and runtimes](/daemon-runtimes) — how the `daemon` commands work under the hood
+- [Creating and configuring agents](/agents-create) — all options for `folio agent create`

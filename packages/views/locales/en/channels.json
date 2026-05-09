@@ -1,0 +1,101 @@
+{
+  "sidebar": {
+    "header": "Channels",
+    "new_aria": "New channel",
+    "loading": "Loading…",
+    "empty_title": "No channels yet",
+    "empty_cta": "Create one"
+  },
+  "list_page": {
+    "select_prompt": "Select a channel to start messaging."
+  },
+  "view": {
+    "settings_button": "Settings",
+    "loading_messages": "Loading…",
+    "dm_title": "Direct message",
+    "channel_prefix": "#",
+    "unnamed": "(unnamed)"
+  },
+  "messages": {
+    "empty": "No messages yet. Say hi 👋",
+    "retry_hint": "Send the message again, or @mention a different agent.",
+    "streaming": "streaming…",
+    "reply_button": "Reply",
+    "reply_count_one": "{{count}} reply",
+    "reply_count_other": "{{count}} replies",
+    "failure": {
+      "default": "Delivery failed",
+      "agent_error": "Agent error",
+      "connection_error": "Connection error",
+      "timeout": "Timed out"
+    },
+    "author_label": {
+      "agent": "[agent]",
+      "member": "[member]"
+    }
+  },
+  "composer": {
+    "placeholder_thread": "Reply in thread…",
+    "placeholder_main": "Write a message…",
+    "send": "Send",
+    "send_failed": "Failed to send message",
+    "mention_picker_empty": "No matching agents or members"
+  },
+  "thinking": {
+    "one": "{{name}} is replying…",
+    "two": "{{first}} and {{second}} are replying…",
+    "many": "{{first}}, {{second}} and {{count}} others are replying…",
+    "fallback_name": "Agent"
+  },
+  "thread_drawer": {
+    "title": "Thread",
+    "close_aria": "Close thread",
+    "loading": "Loading…",
+    "not_found": "Thread not found."
+  },
+  "create_dialog": {
+    "title": "New channel",
+    "name_label": "Name",
+    "name_placeholder": "general",
+    "visibility_label": "Visibility",
+    "kind_public": "Public — anyone in the workspace can join",
+    "kind_private": "Private — invite-only",
+    "submit": "Create",
+    "submitting": "Creating…",
+    "create_failed": "Failed to create channel"
+  },
+  "settings": {
+    "panel_title": "Settings",
+    "close_aria": "Close settings",
+    "row_menu_aria": "Member actions",
+    "remove_action": "Remove",
+    "preferences_title": "Channel preferences",
+    "default_mode_label": "Default subscribe mode",
+    "default_mode_mention": "Mention only",
+    "default_mode_subscribe": "Subscribe",
+    "cooldown_label": "Agent cooldown (seconds)",
+    "max_turns_label": "Max consecutive agent turns",
+    "save": "Save preferences",
+    "saving": "Saving…",
+    "validation": {
+      "cooldown_negative": "Cooldown must be 0 or higher",
+      "turns_min": "Max turns must be at least 1"
+    },
+    "save_failed": "Failed to save",
+    "members_title": "Members",
+    "add_agent": "Add agent",
+    "subscribe_mode_aria": "Subscribe mode",
+    "remove_aria": "Remove {{type}} {{shortId}}",
+    "remove_failed": "Failed to remove",
+    "update_failed": "Failed to update mode",
+    "add_failed": "Failed to add agent",
+    "no_more_agents": "No more agents available.",
+    "add_agent_dialog_title": "Add agent to channel"
+  },
+  "reactions": {
+    "add_aria": "Add reaction",
+    "chip_aria": "{{emoji}} {{count}}",
+    "chip_aria_mine": "{{emoji}} {{count}} (you)",
+    "toggle_failed": "Failed to toggle reaction"
+  }
+}

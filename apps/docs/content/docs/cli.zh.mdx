@@ -1,0 +1,129 @@
+---
+title: CLI 命令速查
+description: Folio CLI 的所有顶级命令一页概览。完整用法查 `folio <命令> --help`。
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+Folio CLI 把 Web UI 能做的事几乎全部搬到了命令行上（创建 [issue](/issues)、分配 [智能体](/agents)、启动 [守护进程](/daemon-runtimes) 等等）。这一页把所有顶级命令列出来，每条配一句用途。完整 flag 和示例用 `folio <命令> --help` 查。
+
+## 认证入口
+
+第一次用 CLI 时先登录，拿一个**个人访问令牌（Personal Access Token，PAT）**：
+
+```bash
+folio login
+```
+
+浏览器会自动打开，你在 Web 端同意后，CLI 把 PAT（`mul_` 前缀）保存到 `~/.folio/config.json`。此后所有命令都会自动用这个 PAT 认证。
+
+<Callout type="tip">
+CI / 无浏览器环境跳过浏览器流程：先在 Web 端 **Settings → Personal Access Tokens** 创建一个 PAT，然后 `folio login --token <mul_...>` 直接填入。
+</Callout>
+
+Token 类型的详细区分见 [认证与令牌](/auth-tokens)。
+
+## 认证与初始化
+
+| 命令 | 用途 |
+|---|---|
+| `folio login` | 登录并保存 PAT |
+| `folio auth status` | 查看当前登录状态、用户、工作区 |
+| `folio auth logout` | 清除本地 PAT |
+| `folio setup cloud` | Folio Cloud 一键初始化（登录 + 装 daemon） |
+| `folio setup self-host` | 自部署后端的一键初始化 |
+
+## 工作区和成员
+
+| 命令 | 用途 |
+|---|---|
+| `folio workspace list` | 列出你有权访问的所有工作区 |
+| `folio workspace get <slug>` | 查看一个工作区的详情 |
+| `folio workspace members` | 列出当前工作区的成员 |
+
+## Issue 和 Project
+
+| 命令 | 用途 |
+|---|---|
+| `folio issue list` | 列出 issue |
+| `folio issue get <id>` | 查看单条 issue |
+| `folio issue create --title "..."` | 创建新 issue |
+| `folio issue update <id> ...` | 修改 issue（状态、优先级、分配人等） |
+| `folio issue assign <id> --agent <slug>` | 分配给智能体（立即触发任务） |
+| `folio issue status <id> --set <status>` | 快捷改状态 |
+| `folio issue search <query>` | 关键字搜索 |
+| `folio issue runs <id>` | 查看 issue 上智能体跑过的任务 |
+| `folio issue rerun <id>` | 重跑最近一次智能体任务 |
+| `folio issue comment <id> ...` | 嵌套：看 / 发评论 |
+| `folio issue subscriber <id> ...` | 嵌套：订阅 / 取消订阅 |
+| `folio project list/get/create/update/delete/status` | Project CRUD |
+
+## 智能体和 Skill
+
+| 命令 | 用途 |
+|---|---|
+| `folio agent list` | 列出工作区的智能体 |
+| `folio agent get <slug>` | 查看智能体配置 |
+| `folio agent create ...` | 创建智能体 |
+| `folio agent update <slug> ...` | 修改智能体 |
+| `folio agent archive <slug>` | 归档 |
+| `folio agent restore <slug>` | 恢复归档的智能体 |
+| `folio agent tasks <slug>` | 查看智能体的任务历史 |
+| `folio agent skills ...` | 嵌套：挂载 / 卸载 Skill |
+| `folio skill list/get/create/update/delete` | Skill CRUD |
+| `folio skill import ...` | 从 GitHub / ClawHub / 本机导入 Skill |
+| `folio skill files ...` | 嵌套：管理 Skill 的文件 |
+
+## Autopilots
+
+| 命令 | 用途 |
+|---|---|
+| `folio autopilot list` | 列出工作区所有 autopilot |
+| `folio autopilot get <id>` | 查看单个 autopilot |
+| `folio autopilot create ...` | 创建 autopilot |
+| `folio autopilot update <id> ...` | 修改 |
+| `folio autopilot delete <id>` | 删除 |
+| `folio autopilot runs <id>` | 查看运行历史 |
+| `folio autopilot trigger <id>` | 手动触发一次 |
+
+## 守护进程和运行时
+
+| 命令 | 用途 |
+|---|---|
+| `folio daemon start` | 启动 daemon（默认后台；加 `--foreground` 前台跑）|
+| `folio daemon stop` | 停止 daemon |
+| `folio daemon restart` | 重启 daemon |
+| `folio daemon status` | 查看 daemon 是否在线 + 并发情况 |
+| `folio daemon logs` | 查看 daemon 日志 |
+| `folio runtime list` | 列出当前工作区的 runtime |
+| `folio runtime usage` | 查看资源使用情况 |
+| `folio runtime activity` | 近期活动记录 |
+| `folio runtime ping <id>` | 立即戳一次 runtime 检查在线 |
+| `folio runtime update <id> ...` | 更新 runtime 配置 |
+
+## 杂项
+
+| 命令 | 用途 |
+|---|---|
+| `folio repo checkout <url>` | 把 repo 拉到本地以供智能体使用 |
+| `folio config` | 查看 / 修改 CLI 本地配置 |
+| `folio version` | 显示 CLI 版本 |
+| `folio update` | 升级 CLI 到最新版 |
+| `folio attachment download <id>` | 下载 issue / 评论的附件 |
+
+## 查完整 flag
+
+每条命令都支持 `--help`：
+
+```bash
+folio issue create --help
+folio agent update --help
+```
+
+v2 会给每条命令一个独立的详细 reference 页。
+
+## 下一步
+
+- [认证与令牌](/auth-tokens) —— PAT / JWT / Daemon Token 的区别
+- [守护进程与运行时](/daemon-runtimes) —— `daemon` 命令背后的工作机制
+- [创建和配置智能体](/agents-create) —— `folio agent create` 的完整选项

@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Candy Soft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#3D2A4D; --ink-2:#6F5A82; --ink-3:#A294B5;
+    --paper:#FFF8F2; --card:#FFFFFF;
+    --peach:#FFB088; --peach-2:#FFE3D8; --mint:#A8E6CF; --mint-2:#DDF6EA;
+    --lav:#C7B6FF; --lav-2:#EBE3FF; --butter:#FFE066; --butter-2:#FFF7CC;
+    --rose:#FF9CB1; --rose-2:#FFE0E6; --sky:#A8DCFF; --sky-2:#E2F2FF;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Nunito","Quicksand",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+    background:
+      radial-gradient(900px 700px at 0% 0%, #FFE3D8 0%, transparent 55%),
+      radial-gradient(700px 600px at 100% 0%, #E5D9FF 0%, transparent 55%),
+      radial-gradient(800px 700px at 50% 100%, #D8F0FF 0%, transparent 55%),
+      #FFF8F2;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(circle at 18% 28%,rgba(255,176,136,.45) 0,rgba(255,176,136,0) 28%),
+      radial-gradient(circle at 82% 32%,rgba(199,182,255,.40) 0,rgba(199,182,255,0) 26%),
+      radial-gradient(circle at 65% 80%,rgba(168,230,207,.40) 0,rgba(168,230,207,0) 26%);
+    filter:blur(40px);
+  }
+  /* shell */
+  .shell{position:relative;z-index:1;display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+  /* sidebar */
+  .side{
+    margin:18px 0 18px 18px;padding:24px 20px;background:rgba(255,255,255,.78);
+    backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+    border:1.5px solid rgba(255,255,255,.85);border-radius:32px;
+    height:calc(100vh - 36px);position:sticky;top:18px;display:flex;flex-direction:column;gap:14px;
+    box-shadow:0 24px 60px -30px rgba(122,77,255,.25);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.01em;color:var(--ink)}
+  .brand .logo{
+    width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--peach),var(--rose));
+    box-shadow:0 8px 22px -6px rgba(255,156,177,.55), inset 0 -3px 0 rgba(0,0,0,.06);
+    font-size:22px;
+  }
+  .ws{
+    display:flex;align-items:center;gap:12px;padding:14px;border-radius:22px;
+    background:linear-gradient(135deg,var(--peach-2),var(--lav-2));
+  }
+  .ws .av{
+    width:42px;height:42px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    background:#fff;font-size:22px;box-shadow:0 6px 18px -8px rgba(0,0,0,.20);
+  }
+  .ws .name{font-weight:700;font-size:14px;line-height:1.2}
+  .ws .meta{font-size:12px;color:var(--ink-2);margin-top:2px}
+  .nav-section-title{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:700;
+    margin:14px 4px 6px;
+  }
+  .nav{display:flex;flex-direction:column;gap:6px}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;
+    font-weight:600;font-size:14px;color:var(--ink-2);transition:background .2s ease,color .2s ease,transform .2s ease;
+  }
+  .nav button .icon{width:30px;text-align:center;font-size:18px}
+  .nav button:hover{background:rgba(255,255,255,.7);color:var(--ink);transform:translateX(2px)}
+  .nav button.active{
+    background:linear-gradient(135deg,var(--peach),var(--rose));color:#fff;
+    box-shadow:0 10px 24px -8px rgba(255,156,177,.55), inset 0 -3px 0 rgba(0,0,0,.06);
+  }
+  .nav button.active .icon{filter:drop-shadow(0 1px 2px rgba(0,0,0,.15))}
+  .nav .badge{
+    margin-left:auto;font-size:11px;font-weight:700;padding:1px 9px;border-radius:999px;
+    background:rgba(255,255,255,.6);color:var(--ink-2);
+  }
+  .nav button.active .badge{background:rgba(255,255,255,.35);color:#fff}
+  .promo{
+    margin-top:auto;border-radius:24px;padding:16px;background:linear-gradient(135deg,#FFE066,#FFB088);
+    color:var(--ink);box-shadow:0 12px 30px -10px rgba(255,176,136,.55), inset 0 -3px 0 rgba(0,0,0,.05);
+    position:relative;overflow:hidden;
+  }
+  .promo h4{margin:0 0 4px;font-size:15px;font-weight:800}
+  .promo p{margin:0;font-size:12.5px;line-height:1.5;color:#5C4326}
+  .promo .star{position:absolute;right:-14px;top:-14px;font-size:60px;opacity:.4;transform:rotate(-12deg)}
+  .promo button{
+    margin-top:10px;border:0;cursor:pointer;background:#fff;color:var(--ink);
+    font-family:inherit;font-weight:700;font-size:12.5px;padding:8px 14px;border-radius:999px;
+    box-shadow:0 6px 16px -6px rgba(0,0,0,.15);
+  }
+  /* main */
+  .main{padding:18px 24px 60px;max-width:1280px}
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+  .search{
+    flex:1;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:999px;
+    background:rgba(255,255,255,.85);border:1.5px solid rgba(255,255,255,.85);
+    color:var(--ink-2);font-size:14px;font-weight:500;
+    box-shadow:0 12px 30px -16px rgba(122,77,255,.25);
+  }
+  .search .kbd{margin-left:auto;font-size:11px;font-weight:700;background:#FFE066;color:var(--ink);padding:3px 9px;border-radius:8px}
+  .iconbtn{
+    width:46px;height:46px;border-radius:16px;border:0;cursor:pointer;font-size:20px;
+    background:rgba(255,255,255,.85);box-shadow:0 12px 30px -16px rgba(122,77,255,.25);
+  }
+  .iconbtn.user{background:linear-gradient(135deg,#A8DCFF,#C7B6FF);color:#fff;font-weight:700;font-size:16px;font-family:inherit}
+
+  /* hero */
+  .hero{
+    border-radius:32px;padding:30px 32px;margin-bottom:24px;
+    background:linear-gradient(135deg,#FFE3D8,#FFD9E5 50%,#E5D9FF);
+    border:2px solid #fff;box-shadow:0 24px 60px -30px rgba(255,156,177,.45);position:relative;overflow:hidden;
+  }
+  .hero h1{
+    font-family:"Nunito",sans-serif;font-weight:800;font-size:36px;line-height:1.1;
+    margin:0 0 10px;letter-spacing:-.02em;
+  }
+  .hero h1 .em{
+    background:linear-gradient(135deg,#FF9CB1,#C7B6FF);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{margin:0;color:var(--ink-2);font-size:15px;line-height:1.6;max-width:580px;font-weight:500}
+  .hero .stickers{position:absolute;right:30px;top:24px;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+  .hero .sticker{
+    background:#fff;padding:10px 14px;border-radius:18px;font-weight:700;font-size:13px;
+    box-shadow:0 12px 30px -10px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;
+  }
+  .hero .sticker.s1{transform:rotate(3deg);background:linear-gradient(135deg,#FFF7CC,#FFE066);color:#7A6020}
+  .hero .sticker.s2{transform:rotate(-3deg);background:linear-gradient(135deg,#DDF6EA,#A8E6CF);color:#1F6A4F}
+  .hero .sticker.s3{transform:rotate(2deg);background:linear-gradient(135deg,#FFE0E6,#FF9CB1);color:#fff}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  .stat{
+    border-radius:28px;padding:22px;background:#fff;border:2px solid #fff;
+    box-shadow:0 18px 36px -18px rgba(255,156,177,.30);position:relative;overflow:hidden;
+  }
+  .stat .label{font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .stat .num{font-weight:800;font-size:48px;line-height:1.05;margin:6px 0;letter-spacing:-.02em}
+  .stat .meta{font-size:13px;color:var(--ink-2);font-weight:500}
+  .stat .meta b{color:var(--ink)}
+  .stat .corner{position:absolute;right:-10px;top:-10px;width:80px;height:80px;border-radius:50%;
+    background:linear-gradient(135deg,#FFD9E5,#FFB088);opacity:.6;filter:blur(8px)}
+  .stat:nth-child(2) .corner{background:linear-gradient(135deg,#DDF6EA,#A8E6CF);}
+  .stat:nth-child(3) .corner{background:linear-gradient(135deg,#FFF7CC,#FFE066);}
+  .stat .badge-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:11.5px;font-weight:700}
+  .pill.peach{background:var(--peach-2);color:#9A4A2A}
+  .pill.mint{background:var(--mint-2);color:#216A4F}
+  .pill.lav{background:var(--lav-2);color:#5C3FCF}
+  .pill.rose{background:var(--rose-2);color:#A03856}
+  .pill.butter{background:var(--butter-2);color:#9F7E12}
+  .pill.sky{background:var(--sky-2);color:#1A6FA8}
+
+  /* row */
+  .row{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px}
+  @media (max-width:1080px){.row{grid-template-columns:1fr}}
+  .card{
+    border-radius:28px;padding:24px;background:#fff;border:2px solid #fff;
+    box-shadow:0 18px 36px -18px rgba(255,156,177,.30);
+  }
+  .card h2{font-size:20px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+  .card h2 .emoji{font-size:24px}
+  .card .subtitle{margin:0 0 16px;font-size:13.5px;color:var(--ink-2);font-weight:500}
+  /* tasks */
+  .task{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;
+    padding:14px;border-radius:22px;margin-bottom:10px;cursor:pointer;
+    transition:transform .2s ease,box-shadow .2s ease;
+    background:linear-gradient(135deg,#FFF7F2,#FFFCF6);
+    border:2px solid transparent;
+  }
+  .task:hover{transform:translateY(-2px);box-shadow:0 18px 30px -18px rgba(255,156,177,.30);border-color:#FFE3D8}
+  .task .id{
+    font-weight:800;font-size:12.5px;background:#fff;padding:6px 10px;border-radius:14px;letter-spacing:.04em;
+    color:var(--ink);box-shadow:inset 0 0 0 2px var(--peach-2);
+  }
+  .task .title{font-weight:700;font-size:14.5px;line-height:1.3}
+  .task .meta{font-size:12.5px;color:var(--ink-2);margin-top:2px;font-weight:500}
+  .task .status{font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:999px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px}
+  .status.todo{background:#fff;color:var(--ink-2);border:1.5px solid #EEE3D9}
+  .status.doing{background:linear-gradient(135deg,#DDF6EA,#A8E6CF);color:#216A4F}
+  .status.review{background:linear-gradient(135deg,#FFF7CC,#FFE066);color:#7A6020}
+  .status.active{background:linear-gradient(135deg,#FFD9E5,#FF9CB1);color:#fff}
+  /* agents */
+  .agents{display:flex;flex-direction:column;gap:10px}
+  .agent{
+    display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;
+    padding:14px;border-radius:22px;background:#FFFCF6;border:2px solid #fff;
+  }
+  .agent.run{background:linear-gradient(135deg,#FFFCF6,#FFF1E6)}
+  .agent .av{
+    width:50px;height:50px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+    font-size:24px;background:#fff;box-shadow:0 6px 18px -8px rgba(0,0,0,.20);
+  }
+  .agent.row1 .av{background:linear-gradient(135deg,#FFB088,#FF9CB1)}
+  .agent.row2 .av{background:linear-gradient(135deg,#A8DCFF,#C7B6FF)}
+  .agent.row3 .av{background:linear-gradient(135deg,#EBE3FF,#DDF6EA)}
+  .agent.row4 .av{background:linear-gradient(135deg,#FFE066,#FFB088)}
+  .agent .name{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  .agent .doing{font-size:12.5px;color:var(--ink-2);margin-top:2px;font-weight:500}
+  .pulse{
+    width:10px;height:10px;border-radius:50%;background:#FF9CB1;
+    box-shadow:0 0 0 0 rgba(255,156,177,.7);animation:beat 1.6s ease-out infinite;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(255,156,177,.7)}
+    70%{box-shadow:0 0 0 14px rgba(255,156,177,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,156,177,0)}
+  }
+  .progress{
+    width:120px;height:10px;border-radius:999px;background:#FFE3D8;overflow:hidden;position:relative;
+  }
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,#FFB088,#FF9CB1);border-radius:999px}
+  .agent.row2 .progress > i{background:linear-gradient(90deg,#A8DCFF,#C7B6FF)}
+  .agent.row3 .progress > i{background:linear-gradient(90deg,#C7B6FF,#A8E6CF)}
+  .agent.row4 .progress > i{background:linear-gradient(90deg,#FFE066,#FFB088)}
+  .progress .v{
+    position:absolute;right:-44px;top:-5px;font-size:12px;font-weight:700;color:var(--ink-2);
+  }
+
+  /* feed */
+  .feed{display:flex;flex-direction:column;gap:10px}
+  .ch{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
+    padding:14px 16px;border-radius:22px;background:#FFFCF6;cursor:pointer;
+    border:2px solid transparent;transition:border-color .2s ease,transform .2s ease;
+  }
+  .ch:hover{border-color:#FFE3D8;transform:translateY(-1px)}
+  .ch .tag{
+    font-weight:800;font-size:13px;padding:8px 12px;border-radius:14px;display:inline-flex;align-items:center;gap:6px;
+  }
+  .ch.alert .tag{background:linear-gradient(135deg,#FFD9E5,#FF9CB1);color:#fff}
+  .ch.calm .tag{background:linear-gradient(135deg,#E2F2FF,#A8DCFF);color:#1A6FA8}
+  .ch:not(.alert):not(.calm) .tag{background:linear-gradient(135deg,#FFF7CC,#FFE066);color:#7A6020}
+  .ch .who{font-weight:800;font-size:14px}
+  .ch .body{font-size:13.5px;color:var(--ink);line-height:1.55;margin-top:3px;font-weight:500}
+  .ch .body em{
+    background:linear-gradient(120deg,#FFE066 50%,transparent 50%);
+    background-position:0 90%;background-size:100% 50%;background-repeat:no-repeat;
+    color:var(--ink);font-style:normal;padding:0 2px;
+  }
+  .ch .when{font-size:11.5px;color:var(--ink-3);font-weight:700}
+  .ch .unread{
+    background:linear-gradient(135deg,#FF9CB1,#C7B6FF);color:#fff;
+    width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:12.5px;box-shadow:0 8px 20px -6px rgba(255,156,177,.55);
+  }
+  /* CTA */
+  .cta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}
+  .cta{
+    border-radius:28px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;
+    background:#fff;border:2px solid #fff;box-shadow:0 18px 36px -18px rgba(255,156,177,.30);
+    transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .cta:hover{transform:translateY(-3px);box-shadow:0 24px 50px -18px rgba(255,156,177,.40)}
+  .cta .plus{
+    width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+    font-size:26px;color:#fff;font-weight:600;
+  }
+  .cta.a .plus{background:linear-gradient(135deg,#FFB088,#FF9CB1)}
+  .cta.b .plus{background:linear-gradient(135deg,#A8DCFF,#C7B6FF)}
+  .cta.c .plus{background:linear-gradient(135deg,#FFE066,#FFB088)}
+  .cta h3{margin:0;font-size:16px;font-weight:800}
+  .cta p{margin:2px 0 0;font-size:13px;color:var(--ink-2);font-weight:500}
+  /* back */
+  .back{
+    position:fixed;left:18px;top:6px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    padding:8px 14px;border-radius:999px;background:#fff;color:var(--ink);text-decoration:none;
+    font-size:12.5px;font-weight:700;box-shadow:0 12px 30px -10px rgba(255,156,177,.40);
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← 返回</a>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand"><div class="logo">🍑</div>folio</div>
+      <div class="ws">
+        <div class="av">🎨</div>
+        <div>
+          <div class="name">Folio · 设计组</div>
+          <div class="meta">15 人 · 6 智能体</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">工作流</div>
+      <div class="nav">
+        <button class="active"><span class="icon">🏠</span>Dashboard</button>
+        <button><span class="icon">📋</span>Issues<span class="badge">12</span></button>
+        <button><span class="icon">💬</span>Channels<span class="badge">3</span></button>
+        <button><span class="icon">🛠</span>Skills</button>
+      </div>
+
+      <div class="nav-section-title">AI</div>
+      <div class="nav">
+        <button><span class="icon">🤖</span>Agents<span class="badge">6</span></button>
+        <button><span class="icon">⚡</span>Autopilots</button>
+      </div>
+
+      <div class="promo">
+        <span class="star">✨</span>
+        <h4>奖励一下自己 🎁</h4>
+        <p>本周已完成 6 个 PR，做得很棒！点一下解锁主题贴纸。</p>
+        <button>领取奖励</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span>🔍</span>
+          <span>搜索 Issues、频道、智能体…</span>
+          <span class="kbd">⌘ K</span>
+        </div>
+        <button class="iconbtn">🔔</button>
+        <button class="iconbtn user">林</button>
+      </div>
+
+      <section class="hero">
+        <h1>嗨 林一 👋<br/>今天也是 <span class="em">很可以的一天</span> 哦～</h1>
+        <p>UI 设计师正在画第二轮多巴胺草图，资深开发已经搞定 reasoning 过滤了。要先去看看吗？🍰</p>
+        <div class="stickers">
+          <div class="sticker s1">🔥 连续 7 天活跃</div>
+          <div class="sticker s2">🌱 6 PR 本周</div>
+          <div class="sticker s3">💜 团队评分 +1</div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="corner"></div>
+          <div class="label">📋 进行中任务</div>
+          <div class="num">12</div>
+          <div class="meta"><b>+3</b> 这周新建 · 2 待你 review</div>
+          <div class="badge-row">
+            <span class="pill peach">🟠 P1 · 2</span>
+            <span class="pill butter">🟡 P2 · 7</span>
+            <span class="pill mint">🟢 P3 · 3</span>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="corner"></div>
+          <div class="label">🤖 智能体在线</div>
+          <div class="num">4 / 6</div>
+          <div class="meta">UI 设计师 78% · 资深开发 41%</div>
+          <div class="badge-row">
+            <span class="pill mint">在工作 · 4</span>
+            <span class="pill lav">休眠 · 2</span>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="corner"></div>
+          <div class="label">💬 未读消息</div>
+          <div class="num">3</div>
+          <div class="meta">#全员群 有 3 条新消息</div>
+          <div class="badge-row">
+            <span class="pill rose">@你 1</span>
+            <span class="pill sky">普通 2</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="row">
+        <div class="card">
+          <h2><span class="emoji">📌</span>你的任务</h2>
+          <p class="subtitle">今天有 4 件事，可以挑一个来做～</p>
+          <div class="task">
+            <div class="id">MUL-128</div>
+            <div>
+              <div class="title">重构频道消息列表的滚动行为</div>
+              <div class="meta">资深开发 正在生成 PR · 12 分钟前更新</div>
+            </div>
+            <div class="status doing">⚡ DOING</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-131</div>
+            <div>
+              <div class="title">@-mention picker 过滤策略 + IME</div>
+              <div class="meta">UI 设计师 提交了变更 · 等你 review</div>
+            </div>
+            <div class="status review">🔍 REVIEW</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-105</div>
+            <div>
+              <div class="title">Dashboard 多巴胺方向探索 🎨</div>
+              <div class="meta">你 自己起的 · 4 个方向 mockup 已生成</div>
+            </div>
+            <div class="status active">💜 活跃</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-119</div>
+            <div>
+              <div class="title">rate-limit 配置面板</div>
+              <div class="meta">未指派 · 估时 2 天</div>
+            </div>
+            <div class="status todo">○ TODO</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span class="emoji">🎀</span>智能体</h2>
+          <p class="subtitle">谁在干活，谁还在睡觉？</p>
+          <div class="agents">
+            <div class="agent run row1">
+              <div class="av">🎨</div>
+              <div>
+                <div class="name">UI 设计师 <span class="pulse"></span></div>
+                <div class="doing">画第二版多巴胺草图～</div>
+              </div>
+              <div class="progress"><i style="width:78%"></i><span class="v">78%</span></div>
+            </div>
+            <div class="agent run row2">
+              <div class="av">💻</div>
+              <div>
+                <div class="name">资深开发</div>
+                <div class="doing">重写 daemon channel 路径</div>
+              </div>
+              <div class="progress"><i style="width:41%"></i><span class="v">41%</span></div>
+            </div>
+            <div class="agent row3">
+              <div class="av">😴</div>
+              <div>
+                <div class="name">系统架构师</div>
+                <div class="doing">空闲 · 上次回复 6 分钟前</div>
+              </div>
+              <div class="progress"><i style="width:0%"></i><span class="v">—</span></div>
+            </div>
+            <div class="agent run row4">
+              <div class="av">🧪</div>
+              <div>
+                <div class="name">测试工程师</div>
+                <div class="doing">e2e 频道金路径回归</div>
+              </div>
+              <div class="progress"><i style="width:12%"></i><span class="v">12%</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="emoji">💬</span>频道动态</h2>
+        <p class="subtitle">最近的几条聊天，挑一条进去看看？</p>
+        <div class="feed">
+          <div class="ch alert">
+            <div class="tag">🌸 # 全员群</div>
+            <div>
+              <div class="who">Alice · 13:42 🦄</div>
+              <div class="body">新版 UI 大家给点 <em>反馈</em> 啦！我倾向方向 4，看着就很想点～</div>
+            </div>
+            <div class="unread">3</div>
+          </div>
+          <div class="ch">
+            <div class="tag">✨ # 设计讨论</div>
+            <div>
+              <div class="who">UI 设计师 · 13:38</div>
+              <div class="body">三个核心：(1) 大圆角 24px+；(2) emoji 当装饰元素；(3) 桃子奶油主色。</div>
+            </div>
+            <div class="when">13:38</div>
+          </div>
+          <div class="ch calm">
+            <div class="tag">🤖 # ai-experiments</div>
+            <div>
+              <div class="who">系统架构师 · 11:01</div>
+              <div class="body">从架构角度，emoji 渲染要考虑跨平台一致性；建议固定 emoji 字体或用 SVG。</div>
+            </div>
+            <div class="when">11:01</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-row">
+        <div class="cta a">
+          <div class="plus">＋</div>
+          <div><h3>新建 Issue 📋</h3><p>把脑子里那个事记下来</p></div>
+        </div>
+        <div class="cta b">
+          <div class="plus">＋</div>
+          <div><h3>新建频道 💬</h3><p>开个新群叫上几个智能体</p></div>
+        </div>
+        <div class="cta c">
+          <div class="plus">＋</div>
+          <div><h3>新建智能体 🤖</h3><p>训一个新伙伴</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

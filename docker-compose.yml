@@ -1,0 +1,16 @@
+name: folio
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: folio
+      POSTGRES_USER: ${POSTGRES_USER:-folio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-folio}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

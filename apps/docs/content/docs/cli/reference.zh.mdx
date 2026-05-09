@@ -1,0 +1,401 @@
+---
+title: CLI Reference
+description: Complete command reference for the Folio CLI and agent daemon.
+---
+
+The `folio` CLI connects your local machine to Folio. It handles authentication, workspace management, issue tracking, and runs the agent daemon that executes AI tasks locally.
+
+## Authentication
+
+### Browser Login
+
+```bash
+folio login
+```
+
+Opens your browser for OAuth authentication, creates a 90-day personal access token, and auto-configures your workspaces.
+
+### Token Login
+
+```bash
+folio login --token <mul_...>
+```
+
+Authenticate using a personal access token directly. Useful for headless environments. Pass `--token=` with an empty value to be prompted interactively (so the token never lands in shell history).
+
+### Check Status
+
+```bash
+folio auth status
+```
+
+Shows your current server, user, and token validity.
+
+### Logout
+
+```bash
+folio auth logout
+```
+
+Removes the stored authentication token.
+
+## Agent Daemon
+
+The daemon is the local agent runtime. It detects available AI CLIs on your machine, registers them with the Folio server, and executes tasks when agents are assigned work.
+
+### Start
+
+```bash
+folio daemon start
+```
+
+By default, the daemon runs in the background and logs to `~/.folio/daemon.log`.
+
+To run in the foreground (useful for debugging):
+
+```bash
+folio daemon start --foreground
+```
+
+### Stop
+
+```bash
+folio daemon stop
+```
+
+### Status
+
+```bash
+folio daemon status
+folio daemon status --output json
+```
+
+Shows PID, uptime, detected agents, and watched workspaces.
+
+### Logs
+
+```bash
+folio daemon logs              # Last 50 lines
+folio daemon logs -f           # Follow (tail -f)
+folio daemon logs -n 100       # Last 100 lines
+```
+
+### Supported Agents
+
+The daemon auto-detects these AI CLIs on your PATH:
+
+| CLI | Command | Description |
+|-----|---------|-------------|
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | `claude` | Anthropic's coding agent |
+| [Codex](https://github.com/openai/codex) | `codex` | OpenAI's coding agent |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `gemini` | Google's coding agent |
+| OpenCode | `opencode` | Open-source coding agent |
+| OpenClaw | `openclaw` | Open-source coding agent |
+| Hermes | `hermes` | Nous Research coding agent |
+| Kimi | `kimi` | Moonshot coding agent |
+| Kiro CLI | `kiro-cli` | Kiro ACP coding agent |
+| Pi | `pi` | Inflection coding agent |
+| Cursor Agent | `cursor-agent` | Cursor coding agent |
+
+You need at least one installed. The daemon registers each detected CLI as an available runtime.
+
+### How It Works
+
+1. On start, the daemon detects installed agent CLIs and registers a runtime for each agent in each watched workspace
+2. It polls the server at a configurable interval (default: 3s) for claimed tasks
+3. When a task arrives, it creates an isolated workspace directory, spawns the agent CLI, and streams results back
+4. Heartbeats are sent periodically (default: 15s) so the server knows the daemon is alive
+5. On shutdown, all runtimes are deregistered
+
+### Configuration
+
+Daemon behavior is configured via flags or environment variables:
+
+| Setting | Flag | Env Variable | Default |
+|---------|------|--------------|---------|
+| Poll interval | `--poll-interval` | `FOLIO_DAEMON_POLL_INTERVAL` | `3s` |
+| Heartbeat interval | `--heartbeat-interval` | `FOLIO_DAEMON_HEARTBEAT_INTERVAL` | `15s` |
+| Agent timeout | `--agent-timeout` | `FOLIO_AGENT_TIMEOUT` | `2h` |
+| Max concurrent tasks | `--max-concurrent-tasks` | `FOLIO_DAEMON_MAX_CONCURRENT_TASKS` | `20` |
+| Daemon ID | `--daemon-id` | `FOLIO_DAEMON_ID` | hostname |
+| Device name | `--device-name` | `FOLIO_DAEMON_DEVICE_NAME` | hostname |
+| Runtime name | `--runtime-name` | `FOLIO_AGENT_RUNTIME_NAME` | `Local Agent` |
+| Workspaces root | — | `FOLIO_WORKSPACES_ROOT` | `~/folio_workspaces` |
+
+Agent-specific overrides:
+
+| Variable | Description |
+|----------|-------------|
+| `FOLIO_CLAUDE_PATH` | Custom path to the `claude` binary |
+| `FOLIO_CLAUDE_MODEL` | Override the Claude model used |
+| `FOLIO_CODEX_PATH` | Custom path to the `codex` binary |
+| `FOLIO_CODEX_MODEL` | Override the Codex model used |
+| `FOLIO_OPENCODE_PATH` | Custom path to the `opencode` binary |
+| `FOLIO_OPENCODE_MODEL` | Override the OpenCode model used |
+| `FOLIO_OPENCLAW_PATH` | Custom path to the `openclaw` binary |
+| `FOLIO_OPENCLAW_MODEL` | Override the OpenClaw model used |
+| `FOLIO_HERMES_PATH` | Custom path to the `hermes` binary |
+| `FOLIO_HERMES_MODEL` | Override the Hermes model used |
+| `FOLIO_GEMINI_PATH` | Custom path to the `gemini` binary |
+| `FOLIO_GEMINI_MODEL` | Override the Gemini model used |
+| `FOLIO_PI_PATH` | Custom path to the `pi` binary |
+| `FOLIO_PI_MODEL` | Override the Pi model used |
+| `FOLIO_CURSOR_PATH` | Custom path to the `cursor-agent` binary |
+| `FOLIO_CURSOR_MODEL` | Override the Cursor model used |
+| `FOLIO_KIMI_PATH` | Custom path to the `kimi` binary |
+| `FOLIO_KIMI_MODEL` | Override the Kimi model used |
+| `FOLIO_KIRO_PATH` | Custom path to the `kiro-cli` binary |
+| `FOLIO_KIRO_MODEL` | Override the Kiro model used |
+
+### Self-Hosted Server
+
+When connecting to a self-hosted Folio instance, point the CLI to your server before logging in:
+
+```bash
+export FOLIO_APP_URL=https://app.example.com
+export FOLIO_SERVER_URL=wss://api.example.com/ws
+
+folio login
+folio daemon start
+```
+
+Or set them persistently:
+
+```bash
+folio config set app_url https://app.example.com
+folio config set server_url wss://api.example.com/ws
+```
+
+### Profiles
+
+Profiles let you run multiple daemons on the same machine — for example, one for production and one for a staging server.
+
+```bash
+# Set up a staging profile
+folio setup self-host --profile staging --server-url https://api-staging.example.com --app-url https://staging.example.com
+
+# Start its daemon
+folio daemon start --profile staging
+
+# Default profile runs separately
+folio daemon start
+```
+
+Each profile gets its own config directory (`~/.folio/profiles/<name>/`), daemon state, health port, and workspace root.
+
+## Workspaces
+
+### List Workspaces
+
+```bash
+folio workspace list
+```
+
+Watched workspaces are marked with `*`. The daemon only processes tasks for watched workspaces.
+
+### Watch / Unwatch
+
+```bash
+folio workspace watch <workspace-id>
+folio workspace unwatch <workspace-id>
+```
+
+### Get Details
+
+```bash
+folio workspace get <workspace-id>
+folio workspace get <workspace-id> --output json
+```
+
+### List Members
+
+```bash
+folio workspace members <workspace-id>
+```
+
+## Issues
+
+### List Issues
+
+```bash
+folio issue list
+folio issue list --status in_progress
+folio issue list --priority urgent --assignee "Agent Name"
+folio issue list --assignee-id 5fb87ac7-23b5-4a7a-81fa-ed295a54545d
+folio issue list --limit 20 --output json
+```
+
+Available filters: `--status`, `--priority`, `--assignee` / `--assignee-id`, `--project`, `--limit`. 在重名 workspace 下用 `--assignee-id <uuid>` 可以精确锁定一个成员或 agent。
+
+### Get Issue
+
+```bash
+folio issue get <id>
+folio issue get <id> --output json
+```
+
+### Create Issue
+
+```bash
+folio issue create --title "Fix login bug" --description "..." --priority high --assignee "Lambda"
+folio issue create --title "Fix login bug" --assignee-id 5fb87ac7-23b5-4a7a-81fa-ed295a54545d
+```
+
+Flags: `--title` (required), `--description`, `--status`, `--priority`, `--assignee` / `--assignee-id`, `--parent`, `--project`, `--due-date`. 脚本里如果已经拿到了 UUID（例如来自 `folio workspace members --output json`），传 `--assignee-id <uuid>`（与 `--assignee` 互斥）以精确锁定。
+
+### Update Issue
+
+```bash
+folio issue update <id> --title "New title" --priority urgent
+```
+
+### Assign Issue
+
+```bash
+folio issue assign <id> --to "Lambda"
+folio issue assign <id> --to-id 5fb87ac7-23b5-4a7a-81fa-ed295a54545d
+folio issue assign <id> --unassign
+```
+
+`--to-id <uuid>`（与 `--to` 互斥）按 UUID 精确分配；适合重名 workspace 下脚本化场景。
+
+### Change Status
+
+```bash
+folio issue status <id> in_progress
+```
+
+Valid statuses: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`, `cancelled`.
+
+### Comments
+
+```bash
+# List comments
+folio issue comment list <issue-id>
+
+# Add a comment
+folio issue comment add <issue-id> --content "Looks good, merging now"
+
+# Reply to a specific comment
+folio issue comment add <issue-id> --parent <comment-id> --content "Thanks!"
+
+# Delete a comment
+folio issue comment delete <comment-id>
+```
+
+### Execution History
+
+```bash
+# List all execution runs for an issue
+folio issue runs <issue-id>
+folio issue runs <issue-id> --output json
+
+# View messages for a specific execution run
+folio issue run-messages <task-id>
+folio issue run-messages <task-id> --output json
+
+# Incremental fetch (only messages after a given sequence number)
+folio issue run-messages <task-id> --since 42 --output json
+```
+
+## Projects
+
+Projects group related issues (e.g. a sprint, an epic, a workstream). Every project
+belongs to a workspace and can optionally have a lead (member or agent).
+
+### List Projects
+
+```bash
+folio project list
+folio project list --status in_progress
+folio project list --output json
+```
+
+Available filters: `--status`.
+
+### Get Project
+
+```bash
+folio project get <id>
+folio project get <id> --output json
+```
+
+### Create Project
+
+```bash
+folio project create --title "2026 Week 16 Sprint" --icon "🏃" --lead "Lambda"
+```
+
+Flags: `--title` (required), `--description`, `--status`, `--icon`, `--lead`.
+
+### Update Project
+
+```bash
+folio project update <id> --title "New title" --status in_progress
+folio project update <id> --lead "Lambda"
+```
+
+Flags: `--title`, `--description`, `--status`, `--icon`, `--lead`.
+
+### Change Status
+
+```bash
+folio project status <id> in_progress
+```
+
+Valid statuses: `planned`, `in_progress`, `paused`, `completed`, `cancelled`.
+
+### Delete Project
+
+```bash
+folio project delete <id>
+```
+
+### Associating Issues with Projects
+
+Use the `--project` flag on `issue create` / `issue update` to attach an issue to a
+project, or on `issue list` to filter issues by project:
+
+```bash
+folio issue create --title "Login bug" --project <project-id>
+folio issue update <issue-id> --project <project-id>
+folio issue list --project <project-id>
+```
+
+## Configuration
+
+### View Config
+
+```bash
+folio config show
+```
+
+Shows config file path, server URL, app URL, and default workspace.
+
+### Set Values
+
+```bash
+folio config set server_url wss://api.example.com/ws
+folio config set app_url https://app.example.com
+folio config set workspace_id <workspace-id>
+```
+
+## Other Commands
+
+```bash
+folio version              # Show CLI version and commit hash
+folio update               # Update to latest version
+folio agent list           # List agents in the current workspace
+```
+
+## Output Formats
+
+Most commands support `--output` with two formats:
+
+- `table` — human-readable table (default for list commands)
+- `json` — structured JSON (useful for scripting and automation)
+
+```bash
+folio issue list --output json
+folio daemon status --output json
+```

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "styles/tokens.css",
+    "baseColor": "zinc",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@folio/ui/components",
+    "ui": "@folio/ui/components/ui",
+    "hooks": "@folio/ui/hooks",
+    "lib": "@folio/ui/lib",
+    "utils": "@folio/ui/lib/utils"
+  }
+}

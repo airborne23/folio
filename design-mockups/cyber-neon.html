@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Cyber Neon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#050510; --bg-2:#0B0B16; --panel:#0E0E1A; --panel-2:#13131F;
+    --line:rgba(255,255,255,.06); --line-2:rgba(255,255,255,.10);
+    --ink:#E8E8F0; --ink-2:#9999A8; --ink-3:#5A5A6E;
+    --cyan:#00F0FF; --magenta:#FF00E5; --lime:#B6FF00; --violet:#B388FF; --amber:#FFB000;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter",system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;
+    background-image:
+      linear-gradient(rgba(0,240,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(0,240,255,.05) 1px,transparent 1px);
+    background-size:32px 32px;background-attachment:fixed;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(800px 500px at 80% -10%, rgba(255,0,229,.18), transparent 60%),
+              radial-gradient(700px 480px at -10% 30%, rgba(0,240,255,.18), transparent 60%);
+  }
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+  /* shell */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  .side{
+    border-right:1px solid var(--line);padding:22px 18px;background:var(--bg);
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;gap:14px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:"JetBrains Mono";font-weight:700;font-size:14px;letter-spacing:.04em}
+  .brand .led{width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+  .brand .v{color:var(--ink-3);font-size:11px;margin-left:auto}
+  .ws{
+    margin-top:8px;padding:12px;border:1px solid var(--line);background:var(--panel);
+    display:flex;align-items:center;gap:12px;border-radius:6px;position:relative;
+  }
+  .ws::before{
+    content:"";position:absolute;left:-1px;top:-1px;width:32px;height:1px;background:var(--cyan);
+    box-shadow:0 0 8px var(--cyan);
+  }
+  .ws::after{
+    content:"";position:absolute;right:-1px;bottom:-1px;width:32px;height:1px;background:var(--magenta);
+    box-shadow:0 0 8px var(--magenta);
+  }
+  .ws .av{
+    width:32px;height:32px;background:#000;border:1px solid var(--cyan);color:var(--cyan);
+    display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono";
+    box-shadow:0 0 16px rgba(0,240,255,.35) inset, 0 0 12px rgba(0,240,255,.25);
+  }
+  .ws .name{font-family:"JetBrains Mono";font-size:13px;font-weight:600;letter-spacing:.02em}
+  .ws .meta{font-size:11px;color:var(--ink-3)}
+  .nav-section-title{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;color:var(--ink-3);
+    margin:14px 4px 4px;
+  }
+  .nav-section-title::before{content:"// ";color:var(--ink-3)}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:9px 12px;
+    border-radius:4px;font-family:"JetBrains Mono";font-size:13px;color:var(--ink-2);
+    transition:background .15s ease,color .15s ease;
+  }
+  .nav button .icon{width:18px;text-align:center;color:var(--ink-3)}
+  .nav button:hover{background:var(--panel);color:var(--ink)}
+  .nav button.active{
+    background:linear-gradient(90deg,rgba(0,240,255,.10),transparent 60%);
+    color:var(--cyan);
+    box-shadow:inset 2px 0 0 var(--cyan), inset 0 0 30px rgba(0,240,255,.06);
+  }
+  .nav button.active .icon{color:var(--cyan);text-shadow:0 0 10px var(--cyan)}
+  .nav .badge{
+    margin-left:auto;font-family:"JetBrains Mono";font-size:10.5px;color:var(--ink-3);
+    border:1px solid var(--line-2);padding:1px 6px;border-radius:3px;
+  }
+  .status-card{
+    margin-top:auto;padding:12px;border:1px solid var(--line);border-radius:6px;background:var(--panel);
+    font-family:"JetBrains Mono";font-size:11.5px;
+  }
+  .status-card .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;color:var(--ink-2)}
+  .status-card .row .v{color:var(--ink)}
+  .status-card .row .v.ok{color:var(--lime);text-shadow:0 0 8px rgba(182,255,0,.5)}
+  .status-card .row .v.warn{color:var(--amber);text-shadow:0 0 8px rgba(255,176,0,.5)}
+  .status-card h4{margin:0 0 6px;font-size:12px;color:var(--cyan);letter-spacing:.06em;text-transform:uppercase}
+
+  .main{padding:22px 28px 60px;max-width:1280px;width:100%}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+  .search{
+    flex:1;padding:11px 16px;background:var(--panel);border:1px solid var(--line);border-radius:6px;
+    display:flex;align-items:center;gap:10px;color:var(--ink-3);font-family:"JetBrains Mono";font-size:13px;
+  }
+  .search .prompt{color:var(--cyan)}
+  .search .kbd{margin-left:auto;border:1px solid var(--line-2);padding:1px 8px;border-radius:3px;color:var(--ink-2);font-size:11px}
+  .iconbtn{
+    width:42px;height:42px;border:1px solid var(--line);background:var(--panel);
+    color:var(--ink);cursor:pointer;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .iconbtn:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 12px rgba(0,240,255,.3)}
+  .iconbtn.user{
+    border-color:var(--magenta);color:var(--magenta);box-shadow:inset 0 0 18px rgba(255,0,229,.12);
+    font-family:"JetBrains Mono";
+  }
+  /* hero */
+  .hero{
+    padding:26px 28px;border:1px solid var(--line-2);border-radius:8px;margin-bottom:24px;
+    background:
+      linear-gradient(120deg,rgba(0,240,255,.06),transparent 50%),
+      linear-gradient(300deg,rgba(255,0,229,.06),transparent 50%),
+      var(--panel);
+    position:relative;overflow:hidden;
+  }
+  .hero .meta{
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.12em;color:var(--ink-3);
+    display:flex;gap:18px;margin-bottom:10px;
+  }
+  .hero .meta b{color:var(--lime);text-shadow:0 0 10px rgba(182,255,0,.5)}
+  .hero h1{
+    font-family:"JetBrains Mono";font-weight:500;font-size:36px;letter-spacing:-.01em;line-height:1.15;
+    margin:0 0 8px;
+  }
+  .hero h1 .c{color:var(--cyan);text-shadow:0 0 24px rgba(0,240,255,.6)}
+  .hero h1 .m{color:var(--magenta);text-shadow:0 0 24px rgba(255,0,229,.6)}
+  .hero p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.6;max-width:680px}
+  .hero p code{background:rgba(0,240,255,.10);color:var(--cyan);padding:1px 6px;border-radius:3px;font-family:"JetBrains Mono";font-size:13px}
+  .hero .scan{
+    position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+    box-shadow:0 0 12px var(--cyan);animation:scan 4s linear infinite;
+  }
+  @keyframes scan{
+    0%{transform:translateY(0)}
+    100%{transform:translateY(160px)}
+  }
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+  .stat{
+    padding:18px 20px;background:var(--panel);border:1px solid var(--line);border-radius:8px;position:relative;overflow:hidden;
+  }
+  .stat::before{
+    content:"";position:absolute;left:0;top:0;width:100%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.6;
+  }
+  .stat.m::before{background:linear-gradient(90deg,transparent,var(--magenta),transparent)}
+  .stat.l::before{background:linear-gradient(90deg,transparent,var(--lime),transparent)}
+  .stat .label{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+  .stat .num{
+    font-family:"JetBrains Mono";font-weight:500;font-size:44px;line-height:1.05;margin:6px 0;
+  }
+  .stat.c .num{color:var(--cyan);text-shadow:0 0 30px rgba(0,240,255,.55)}
+  .stat.m .num{color:var(--magenta);text-shadow:0 0 30px rgba(255,0,229,.55)}
+  .stat.l .num{color:var(--lime);text-shadow:0 0 30px rgba(182,255,0,.55)}
+  .stat .meta{font-size:13px;color:var(--ink-2);font-family:"JetBrains Mono"}
+  .stat .meta .ok{color:var(--lime)}
+  .stat .meta .warn{color:var(--amber)}
+  .stat .ascii{
+    position:absolute;right:14px;top:14px;font-family:"JetBrains Mono";font-size:10px;color:var(--ink-3);
+    text-align:right;line-height:1.2;opacity:.7;
+  }
+  /* row */
+  .row{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:18px}
+  @media (max-width:1080px){.row{grid-template-columns:1fr}}
+  .card{
+    border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:20px;
+  }
+  .card h2{
+    font-family:"JetBrains Mono";font-weight:500;font-size:14px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink);margin:0 0 14px;display:flex;align-items:center;gap:8px;
+  }
+  .card h2::before{content:">";color:var(--cyan);text-shadow:0 0 8px rgba(0,240,255,.5)}
+  .card .subtitle{
+    font-family:"JetBrains Mono";font-size:11.5px;color:var(--ink-3);margin:-8px 0 14px;letter-spacing:.04em;
+  }
+  /* tasks */
+  .task{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:11px 12px;
+    border:1px solid var(--line);border-radius:6px;background:var(--bg-2);margin-bottom:6px;cursor:pointer;
+    transition:border-color .15s ease;
+  }
+  .task:hover{border-color:var(--cyan);background:linear-gradient(90deg,rgba(0,240,255,.04),transparent 60%)}
+  .task .id{font-family:"JetBrains Mono";font-size:11.5px;color:var(--ink-3);min-width:64px;letter-spacing:.04em}
+  .task .title{font-size:13.5px;color:var(--ink);font-weight:500}
+  .task .meta{font-family:"JetBrains Mono";font-size:11px;color:var(--ink-3);margin-top:2px}
+  .task .status{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.10em;text-transform:uppercase;padding:3px 8px;
+    border-radius:3px;border:1px solid var(--line-2);
+  }
+  .status.todo{color:var(--ink-3)}
+  .status.doing{color:var(--cyan);border-color:var(--cyan);text-shadow:0 0 8px rgba(0,240,255,.5);box-shadow:inset 0 0 14px rgba(0,240,255,.10)}
+  .status.review{color:var(--amber);border-color:var(--amber);text-shadow:0 0 8px rgba(255,176,0,.5);box-shadow:inset 0 0 14px rgba(255,176,0,.10)}
+  .status.active{color:var(--magenta);border-color:var(--magenta);text-shadow:0 0 8px rgba(255,0,229,.5);box-shadow:inset 0 0 14px rgba(255,0,229,.10)}
+  /* agents */
+  .agents{display:flex;flex-direction:column;gap:6px}
+  .agent{
+    display:grid;grid-template-columns:42px 1fr auto;gap:14px;align-items:center;padding:11px;
+    border:1px solid var(--line);border-radius:6px;background:var(--bg-2);
+  }
+  .agent .av{
+    width:42px;height:42px;border:1px solid var(--line-2);background:#000;
+    display:flex;align-items:center;justify-content:center;font-family:"JetBrains Mono";font-size:13px;font-weight:600;
+  }
+  .agent.row1 .av{color:var(--magenta);border-color:var(--magenta);box-shadow:inset 0 0 16px rgba(255,0,229,.18),0 0 14px rgba(255,0,229,.20)}
+  .agent.row2 .av{color:var(--cyan);border-color:var(--cyan);box-shadow:inset 0 0 16px rgba(0,240,255,.18),0 0 14px rgba(0,240,255,.20)}
+  .agent.row3 .av{color:var(--ink-3)}
+  .agent.row4 .av{color:var(--lime);border-color:var(--lime);box-shadow:inset 0 0 16px rgba(182,255,0,.18),0 0 14px rgba(182,255,0,.20)}
+  .agent .name{font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .agent .doing{font-family:"JetBrains Mono";font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .agent .doing .ai{color:var(--cyan)}
+  .pulse{width:8px;height:8px;border-radius:50%;background:var(--magenta);box-shadow:0 0 0 0 rgba(255,0,229,.7);animation:beat 1.6s ease-out infinite}
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(255,0,229,.7)}
+    70%{box-shadow:0 0 0 12px rgba(255,0,229,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,0,229,0)}
+  }
+  .progress{
+    width:120px;height:8px;background:#000;border:1px solid var(--line-2);position:relative;
+  }
+  .progress > i{display:block;height:100%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+  .progress.m > i{background:var(--magenta);box-shadow:0 0 12px var(--magenta)}
+  .progress.l > i{background:var(--lime);box-shadow:0 0 12px var(--lime)}
+  .progress .v{
+    position:absolute;right:-44px;top:-3px;font-family:"JetBrains Mono";font-size:11px;color:var(--ink-2);
+  }
+  /* feed */
+  .feed{display:flex;flex-direction:column;gap:6px}
+  .feed .ch{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:12px;
+    border:1px solid var(--line);border-radius:6px;background:var(--bg-2);cursor:pointer;
+  }
+  .feed .ch:hover{border-color:var(--cyan)}
+  .feed .ch .tag{
+    font-family:"JetBrains Mono";font-size:11.5px;letter-spacing:.04em;padding:4px 10px;
+    border:1px solid var(--line-2);color:var(--ink-2);background:#000;border-radius:3px;
+  }
+  .feed .ch.alert .tag{color:var(--magenta);border-color:var(--magenta);box-shadow:0 0 14px rgba(255,0,229,.20)}
+  .feed .ch.calm .tag{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(0,240,255,.20)}
+  .feed .ch .who{font-size:13px;font-weight:600}
+  .feed .ch .body{font-size:13px;color:var(--ink-2);line-height:1.55;margin-top:3px}
+  .feed .ch .body em{color:var(--cyan);font-style:normal;text-shadow:0 0 10px rgba(0,240,255,.4)}
+  .feed .ch .when{font-family:"JetBrains Mono";font-size:10.5px;color:var(--ink-3);letter-spacing:.04em}
+  .feed .ch .unread{
+    font-family:"JetBrains Mono";font-size:10.5px;color:var(--magenta);
+    border:1px solid var(--magenta);padding:2px 8px;border-radius:3px;align-self:start;margin-top:1px;
+    text-shadow:0 0 8px rgba(255,0,229,.5);
+  }
+  /* CTA */
+  .cta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+  .cta{
+    padding:16px 18px;border:1px solid var(--line);border-radius:8px;background:var(--panel);
+    cursor:pointer;display:flex;align-items:center;gap:14px;
+    transition:border-color .15s ease,box-shadow .15s ease;
+  }
+  .cta:hover{box-shadow:0 0 28px rgba(0,240,255,.20);border-color:var(--cyan)}
+  .cta.a:hover{box-shadow:0 0 28px rgba(255,0,229,.20);border-color:var(--magenta)}
+  .cta.c:hover{box-shadow:0 0 28px rgba(182,255,0,.20);border-color:var(--lime)}
+  .cta .plus{
+    width:40px;height:40px;border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;
+    font-family:"JetBrains Mono";font-size:20px;color:var(--cyan);text-shadow:0 0 8px var(--cyan);
+  }
+  .cta.a .plus{color:var(--magenta);text-shadow:0 0 8px var(--magenta)}
+  .cta.c .plus{color:var(--lime);text-shadow:0 0 8px var(--lime)}
+  .cta h3{font-family:"JetBrains Mono";font-size:13.5px;letter-spacing:.04em;margin:0;color:var(--ink)}
+  .cta p{margin:2px 0 0;font-family:"JetBrains Mono";font-size:11.5px;color:var(--ink-3)}
+  /* back */
+  .back{
+    position:fixed;left:18px;top:6px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    padding:6px 12px;background:#000;border:1px solid var(--cyan);color:var(--cyan);text-decoration:none;
+    font-family:"JetBrains Mono";font-size:11.5px;letter-spacing:.04em;text-shadow:0 0 8px rgba(0,240,255,.5);
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← back/</a>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="led"></span>folio<span class="v">v0.4.2</span></div>
+      <div class="ws">
+        <div class="av">设</div>
+        <div>
+          <div class="name">folio/design</div>
+          <div class="meta">15 humans · 6 agents</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">workflow</div>
+      <div class="nav">
+        <button class="active"><span class="icon">★</span>dashboard</button>
+        <button><span class="icon">▤</span>issues<span class="badge">12</span></button>
+        <button><span class="icon">⚑</span>channels<span class="badge">3</span></button>
+        <button><span class="icon">⌘</span>skills</button>
+      </div>
+
+      <div class="nav-section-title">ai/runtime</div>
+      <div class="nav">
+        <button><span class="icon">◎</span>agents<span class="badge">6</span></button>
+        <button><span class="icon">⚙</span>autopilots</button>
+      </div>
+
+      <div class="status-card">
+        <h4>system status</h4>
+        <div class="row"><span>// runtime</span><span class="v ok">● online</span></div>
+        <div class="row"><span>// daemon</span><span class="v ok">● 1648331</span></div>
+        <div class="row"><span>// queue</span><span class="v">2 active</span></div>
+        <div class="row"><span>// latency</span><span class="v warn">142 ms</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span class="prompt">$</span>
+          <span>search issues, channels, agents…</span>
+          <span class="kbd mono">⌘ K</span>
+        </div>
+        <button class="iconbtn">⚲</button>
+        <button class="iconbtn user">L</button>
+      </div>
+
+      <section class="hero">
+        <div class="scan"></div>
+        <div class="meta">
+          <span>// session: <b>active</b></span>
+          <span>// uptime: 02:14:33</span>
+          <span>// branch: feat/channels</span>
+        </div>
+        <h1>welcome back, <span class="c">林一</span>.<br/>your stack is <span class="m">running hot</span>.</h1>
+        <p>
+          <code>UI 设计师</code> 正在生成多巴胺草图（78%），<code>资深开发</code> 已 ship reasoning 过滤器。
+          要不要先 <code>review</code> 一下 PR？
+        </p>
+      </section>
+
+      <section class="stats">
+        <div class="stat c">
+          <div class="label">// open issues</div>
+          <div class="num">12</div>
+          <div class="meta"><span class="ok">+3</span> 这周新建 · 2 待 review</div>
+          <div class="ascii">[▤]</div>
+        </div>
+        <div class="stat m">
+          <div class="label">// agents.working</div>
+          <div class="num">4 / 6</div>
+          <div class="meta">UI 78% · DEV <span class="warn">41%</span></div>
+          <div class="ascii">[◎]</div>
+        </div>
+        <div class="stat l">
+          <div class="label">// channels.unread</div>
+          <div class="num">3</div>
+          <div class="meta">#全员群 · last 13:42</div>
+          <div class="ascii">[#]</div>
+        </div>
+      </section>
+
+      <section class="row">
+        <div class="card">
+          <h2>your tasks</h2>
+          <p class="subtitle">// 4 items · sorted by priority</p>
+          <div class="task">
+            <div class="id">MUL-128</div>
+            <div>
+              <div class="title">重构频道消息列表的滚动行为</div>
+              <div class="meta">@dev_ai · pr-pending · 12m ago</div>
+            </div>
+            <div class="status doing">DOING</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-131</div>
+            <div>
+              <div class="title">@-mention picker 过滤 + IME guard</div>
+              <div class="meta">@ui_ai · awaiting your review</div>
+            </div>
+            <div class="status review">REVIEW</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-105</div>
+            <div>
+              <div class="title">dashboard 多巴胺方向探索</div>
+              <div class="meta">self · 4 mockups generated</div>
+            </div>
+            <div class="status active">ACTIVE</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-119</div>
+            <div>
+              <div class="title">rate-limit 配置面板</div>
+              <div class="meta">unassigned · est 2d</div>
+            </div>
+            <div class="status todo">TODO</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>active agents</h2>
+          <p class="subtitle">// 4 / 6 online · live tick</p>
+          <div class="agents">
+            <div class="agent row1">
+              <div class="av">UI</div>
+              <div>
+                <div class="name">ui_designer_ai <span class="pulse"></span></div>
+                <div class="doing">› <span class="ai">render</span> dopamine sketch v2</div>
+              </div>
+              <div class="progress m"><i style="width:78%"></i><span class="v">78%</span></div>
+            </div>
+            <div class="agent row2">
+              <div class="av">DV</div>
+              <div>
+                <div class="name">dev_ai</div>
+                <div class="doing">› <span class="ai">refactor</span> daemon channel path</div>
+              </div>
+              <div class="progress"><i style="width:41%"></i><span class="v">41%</span></div>
+            </div>
+            <div class="agent row3">
+              <div class="av">AR</div>
+              <div>
+                <div class="name">arch_ai</div>
+                <div class="doing">› idle · last reply 6m ago</div>
+              </div>
+              <div class="progress"><i style="width:0%"></i><span class="v">—</span></div>
+            </div>
+            <div class="agent row4">
+              <div class="av">QA</div>
+              <div>
+                <div class="name">test_ai</div>
+                <div class="doing">› <span class="ai">run</span> e2e channels.golden_path</div>
+              </div>
+              <div class="progress l"><i style="width:12%"></i><span class="v">12%</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>channel feed</h2>
+        <p class="subtitle">// 3 unread · last activity 13:42</p>
+        <div class="feed">
+          <div class="ch alert">
+            <div class="tag"># 全员群</div>
+            <div>
+              <div class="who">alice · 13:42</div>
+              <div class="body">新版 UI 大家给点 <em>反馈</em> 啦！我倾向方向 3，最有 hacker 感。</div>
+            </div>
+            <div class="unread">3 NEW</div>
+          </div>
+          <div class="ch">
+            <div class="tag"># 设计讨论</div>
+            <div>
+              <div class="who">ui_designer_ai · 13:38</div>
+              <div class="body">三个核心：(1) 主色 cyan/magenta；(2) 等宽数字 + 字符 LED；(3) 网格背景。</div>
+            </div>
+            <div class="when">13:38</div>
+          </div>
+          <div class="ch calm">
+            <div class="tag"># ai-experiments</div>
+            <div>
+              <div class="who">arch_ai · 11:01</div>
+              <div class="body">大量 box-shadow glow 在低端机性能要测；建议 prefers-reduced-motion 兜底。</div>
+            </div>
+            <div class="when">11:01</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-row">
+        <div class="cta a">
+          <div class="plus">+</div>
+          <div><h3>new issue</h3><p>// log it before you forget</p></div>
+        </div>
+        <div class="cta">
+          <div class="plus">+</div>
+          <div><h3>new channel</h3><p>// spin up a war room</p></div>
+        </div>
+        <div class="cta c">
+          <div class="plus">+</div>
+          <div><h3>new agent</h3><p>// fork another self</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

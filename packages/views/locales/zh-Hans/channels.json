@@ -1,0 +1,100 @@
+{
+  "sidebar": {
+    "header": "频道",
+    "new_aria": "新建频道",
+    "loading": "加载中…",
+    "empty_title": "暂无频道",
+    "empty_cta": "立即创建"
+  },
+  "list_page": {
+    "select_prompt": "请选择一个频道开始聊天。"
+  },
+  "view": {
+    "settings_button": "设置",
+    "loading_messages": "加载中…",
+    "dm_title": "私聊",
+    "channel_prefix": "#",
+    "unnamed": "（未命名）"
+  },
+  "messages": {
+    "empty": "还没有消息，打个招呼吧 👋",
+    "retry_hint": "重新发送一次消息，或者 @ 其他智能体试试。",
+    "streaming": "回复中…",
+    "reply_button": "回复",
+    "reply_count_other": "{{count}} 条回复",
+    "failure": {
+      "default": "消息发送失败",
+      "agent_error": "智能体错误",
+      "connection_error": "连接错误",
+      "timeout": "超时"
+    },
+    "author_label": {
+      "agent": "[智能体]",
+      "member": "[成员]"
+    }
+  },
+  "composer": {
+    "placeholder_thread": "在话题中回复…",
+    "placeholder_main": "输入消息…",
+    "send": "发送",
+    "send_failed": "发送失败",
+    "mention_picker_empty": "没有匹配的智能体或成员"
+  },
+  "thinking": {
+    "one": "{{name}} 正在回复…",
+    "two": "{{first}} 和 {{second}} 正在回复…",
+    "many": "{{first}}、{{second}} 等 {{count}} 个智能体正在回复…",
+    "fallback_name": "智能体"
+  },
+  "thread_drawer": {
+    "title": "话题",
+    "close_aria": "关闭话题",
+    "loading": "加载中…",
+    "not_found": "未找到话题。"
+  },
+  "create_dialog": {
+    "title": "新建频道",
+    "name_label": "名称",
+    "name_placeholder": "general",
+    "visibility_label": "可见性",
+    "kind_public": "公开 — 工作区成员均可加入",
+    "kind_private": "私密 — 仅限受邀成员",
+    "submit": "创建",
+    "submitting": "创建中…",
+    "create_failed": "创建频道失败"
+  },
+  "settings": {
+    "panel_title": "设置",
+    "close_aria": "关闭设置",
+    "row_menu_aria": "成员操作",
+    "remove_action": "移除",
+    "preferences_title": "频道设置",
+    "default_mode_label": "默认订阅模式",
+    "default_mode_mention": "仅 @ 提及",
+    "default_mode_subscribe": "订阅",
+    "cooldown_label": "智能体冷却（秒）",
+    "max_turns_label": "智能体连续发言上限",
+    "save": "保存设置",
+    "saving": "保存中…",
+    "validation": {
+      "cooldown_negative": "冷却时间不能小于 0",
+      "turns_min": "连续发言上限不能小于 1"
+    },
+    "save_failed": "保存失败",
+    "members_title": "成员",
+    "add_agent": "添加智能体",
+    "subscribe_mode_aria": "订阅模式",
+    "remove_aria": "移除{{type}} {{shortId}}",
+    "remove_failed": "移除失败",
+    "update_failed": "更新模式失败",
+    "add_failed": "添加智能体失败",
+    "no_more_agents": "没有可添加的智能体。",
+    "add_agent_dialog_title": "添加智能体到频道"
+  },
+  "reactions": {
+    "add_aria": "添加表情",
+    "chip_aria": "{{emoji}} {{count}}",
+    "chip_aria_mine": "{{emoji}} {{count}}（你）",
+    "toggle_failed": "切换表情失败"
+  }
+}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Folio">
+  <!-- Cream paper background -->
+  <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+  <!-- Serif F (Source Serif 4 weight 600 hand-traced as paths-equivalent text) -->
+  <text x="22" y="62"
+        font-family="'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif"
+        font-weight="600" font-size="64"
+        fill="#191919">F</text>
+  <!-- Caramel folded corner — top-right turn-of-page -->
+  <path d="M 80 0 L 80 20 L 60 0 Z" fill="#CC785C"/>
+  <!-- Subtle inner shadow line on the fold (one shade darker than caramel) -->
+  <path d="M 60 0 L 80 20" stroke="#9C5C44" stroke-width="0.6" fill="none" opacity="0.45"/>
+</svg>

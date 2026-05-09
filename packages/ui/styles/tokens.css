@@ -1,0 +1,196 @@
+/* Folio design tokens — shared across Web + Desktop
+ *
+ * Theme: Anthropic-style cream + caramel.
+ *  - Paper      #F5F0E5  (background)
+ *  - Card       #FAF6EC  (slightly off-cream)
+ *  - Ink        #191919  (true ink, not warm grey)
+ *  - Ink-3      #7A7264  (warm muted text)
+ *  - Caramel    #CC785C  (brand)
+ *  - Olive      #7E8F62  (success / secondary accent)
+ *  - All separators are ink/10% lines, not warm-beige borders — matches
+ *    the mockup's "open page" look where chrome dissolves into the paper.
+ */
+
+@theme inline {
+    --font-heading: var(--font-serif);
+    --font-sans: var(--font-sans);
+    --font-serif: var(--font-serif);
+    --font-mono: var(--font-mono);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-brand: var(--brand);
+    --color-brand-foreground: var(--brand-foreground);
+    --color-priority: var(--priority);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    /* Surface tokens use literal hex from anthropic-cream.html so the
+     * shipped product matches the mockup colour for colour. Previous
+     * oklch approximations drifted ~3–5% darker than intended (sidebar
+     * compiled to #ECE3D2 instead of #EFE8D7), losing the mockup's
+     * warmth. Hex literals remove the conversion step.
+     *
+     * Layer plan:
+     *   Layer 0  sidebar  #F5F0E5  mockup paper (warm cream desk)
+     *   Layer 1  main bg  #FDFCF8  near-white sheet (lifted from paper)
+     *   Layer 2  card     #FFFFFF  pure white panel (elevated content)
+     *
+     * Hover / muted / accent share #EFE8D7 — mockup paper-2, the
+     * "pressed into the page" hover tone.
+     *
+     * Other tokens still use oklch where Tailwind needs to interpolate
+     * (foreground / muted-foreground / brand / chart palette).
+     *
+     *   #191919  true ink     → oklch(0.157 0 0)
+     *   #7A7264  warm muted   → oklch(0.51 0.018 70)
+     *   #CC785C  mockup coral → exact hex
+     *   #7E8F62  olive        → oklch(0.595 0.062 120)
+     */
+    --background: #FDFCF8;
+    --foreground: oklch(0.157 0 0);
+    --card: #FFFFFF;
+    --card-foreground: oklch(0.157 0 0);
+    --popover: #FFFFFF;
+    --popover-foreground: oklch(0.157 0 0);
+    /* Primary = ink (true black). Hot keys / default buttons are
+       printed-on-paper black, not warm grey. */
+    --primary: oklch(0.157 0 0);
+    --primary-foreground: #FDFCF8;
+    /* Secondary / muted / accent share mockup paper-2 (#EFE8D7) so
+       hover states press toward the sidebar tone, not toward a
+       coloured chip. */
+    --secondary: #EFE8D7;
+    --secondary-foreground: oklch(0.20 0.006 60);
+    --muted: #EFE8D7;
+    --muted-foreground: oklch(0.51 0.018 70);
+    --accent: #EFE8D7;
+    --accent-foreground: oklch(0.20 0.006 60);
+    --destructive: oklch(0.50 0.135 28);
+    /* Border = ink at 10% opacity. Every separator in the chrome —
+       card border, input border, divider — collapses onto a single
+       ink-derived hairline so warm-beige borders never fight the
+       cream canvas. */
+    --border: oklch(0.157 0 0 / 10%);
+    --input: oklch(0.157 0 0 / 14%);
+    --ring: #CC785C;
+    /* Chart palette: caramel · olive · gold · rust · slate — pulled from
+       the mockup's stat / agent / status colour token set so charts read
+       native to the warm palette. */
+    --chart-1: #CC785C;
+    --chart-2: oklch(0.595 0.062 120);
+    --chart-3: oklch(0.71 0.105 80);
+    --chart-4: oklch(0.55 0.115 28);
+    --chart-5: oklch(0.50 0.025 250);
+    --radius: 0.5rem;
+    /* Sidebar uses mockup paper #F5F0E5 — the canonical warm cream.
+       Layer 1 main bg lifts to near-white so the cream sidebar reads
+       as the desk under a paper sheet. */
+    --sidebar: #F5F0E5;
+    --sidebar-foreground: oklch(0.157 0 0);
+    --sidebar-primary: #CC785C;
+    --sidebar-primary-foreground: #FDFCF8;
+    --sidebar-accent: #EFE8D7;
+    --sidebar-accent-foreground: oklch(0.20 0.006 60);
+    --sidebar-border: oklch(0.157 0 0 / 10%);
+    --sidebar-ring: #CC785C;
+    /* Caramel #CC785C — Anthropic's signature accent. Used for branded
+       CTAs, ✻ motif, caramel italic emphases, active-state ticks. */
+    --brand: #CC785C;
+    --brand-foreground: #FDFCF8;
+    /* Olive #7E8F62 — success / secondary accent. */
+    --success: oklch(0.595 0.062 120);
+    --warning: oklch(0.71 0.105 80);
+    --info: #CC785C;
+    --priority: oklch(0.71 0.105 80);
+    /* Scrollbar uses ink at low alpha so the track tints warm on cream
+       rather than reading as a cold grey strip. */
+    --scrollbar-thumb: oklch(0.157 0 0 / 14%);
+    --scrollbar-thumb-hover: oklch(0.157 0 0 / 26%);
+    --scrollbar-track: transparent;
+}
+
+/* Dark theme retained as a structural no-op: every token mirrors :root
+   so the next-themes toggle stays wired (sonner / preferences UI still
+   round-trip a value) but the visual outcome is the cream theme either
+   way. If a true dark variant is reintroduced, override here only. */
+.dark {
+    --background: #FDFCF8;
+    --foreground: oklch(0.157 0 0);
+    --card: #FFFFFF;
+    --card-foreground: oklch(0.157 0 0);
+    --popover: #FFFFFF;
+    --popover-foreground: oklch(0.157 0 0);
+    --primary: oklch(0.157 0 0);
+    --primary-foreground: #FDFCF8;
+    --secondary: #EFE8D7;
+    --secondary-foreground: oklch(0.20 0.006 60);
+    --muted: #EFE8D7;
+    --muted-foreground: oklch(0.51 0.018 70);
+    --accent: #EFE8D7;
+    --accent-foreground: oklch(0.20 0.006 60);
+    --destructive: oklch(0.50 0.135 28);
+    --border: oklch(0.157 0 0 / 10%);
+    --input: oklch(0.157 0 0 / 14%);
+    --ring: #CC785C;
+    --chart-1: #CC785C;
+    --chart-2: oklch(0.595 0.062 120);
+    --chart-3: oklch(0.71 0.105 80);
+    --chart-4: oklch(0.55 0.115 28);
+    --chart-5: oklch(0.50 0.025 250);
+    --sidebar: #F5F0E5;
+    --sidebar-foreground: oklch(0.157 0 0);
+    --sidebar-primary: #CC785C;
+    --sidebar-primary-foreground: #FDFCF8;
+    --sidebar-accent: #EFE8D7;
+    --sidebar-accent-foreground: oklch(0.20 0.006 60);
+    --sidebar-border: oklch(0.157 0 0 / 10%);
+    --sidebar-ring: #CC785C;
+    --brand: #CC785C;
+    --brand-foreground: #FDFCF8;
+    --success: oklch(0.595 0.062 120);
+    --warning: oklch(0.71 0.105 80);
+    --info: #CC785C;
+    --priority: oklch(0.71 0.105 80);
+    --scrollbar-thumb: oklch(0.157 0 0 / 14%);
+    --scrollbar-thumb-hover: oklch(0.157 0 0 / 26%);
+    --scrollbar-track: transparent;
+}

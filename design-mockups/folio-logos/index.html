@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<title>Folio Logo Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #F5F0E5;
+    --paper-2: #EFE8D7;
+    --ink: #191919;
+    --ink-2: #3D3A33;
+    --ink-3: #7A7264;
+    --caramel: #CC785C;
+    --line: rgba(25, 25, 25, 0.10);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 40px 32px 80px;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header { margin-bottom: 36px; }
+  h1 {
+    font-family: "Source Serif 4", serif;
+    font-weight: 500;
+    font-size: 38px;
+    letter-spacing: -0.015em;
+    margin: 0 0 6px;
+  }
+  .lede {
+    font-family: "Source Serif 4", serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    padding: 24px;
+  }
+  .card h2 {
+    font-family: "Source Serif 4", serif;
+    font-weight: 500;
+    font-size: 20px;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .caption {
+    font-family: "Inter";
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 18px;
+    font-weight: 600;
+  }
+  .preview-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 22px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+  }
+  .size-cell { display: flex; flex-direction: column; align-items: center; }
+  .size-cell svg { display: block; }
+  .size-128 svg { width: 128px; height: 128px; }
+  .size-64  svg { width: 64px;  height: 64px;  }
+  .size-32  svg { width: 32px;  height: 32px;  }
+  .size-16  svg { width: 16px;  height: 16px;  }
+  .size-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 6px;
+    text-align: center;
+  }
+  .why {
+    font-family: "Source Serif 4", serif;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    margin: 0;
+  }
+  .why em { color: var(--caramel); }
+  .verdict {
+    margin-top: 14px;
+    font-family: "Inter";
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .verdict.good { color: var(--caramel); }
+  .verdict.mid  { color: var(--ink-3); }
+  .verdict.weak { color: #B85040; }
+  .star { color: var(--caramel); display: inline-block; margin-right: 6px; }
+  footer code {
+    background: var(--paper-2); padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace; font-style: normal;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="star">✻</span>Folio logo — 4 directions</h1>
+    <p class="lede">每张缩到 128 / 64 / 32 / 16 看一眼，favicon 尺寸是真考验。</p>
+  </header>
+
+  <div class="grid">
+
+    <!-- ========== Option 1: F + 折页角 ========== -->
+    <section class="card">
+      <h2>1 · F + 折页角</h2>
+      <div class="caption">letter mark · turn-of-page</div>
+      <div class="preview-row">
+        <div class="size-cell"><div class="size-128">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="22" y="62" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-size="64" fill="#191919">F</text>
+            <path d="M 80 0 L 80 20 L 60 0 Z" fill="#CC785C"/>
+            <path d="M 60 0 L 80 20" stroke="#9C5C44" stroke-width="0.6" fill="none" opacity="0.45"/>
+          </svg>
+        </div><div class="size-label">128px</div></div>
+
+        <div class="size-cell"><div class="size-64">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="22" y="62" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-size="64" fill="#191919">F</text>
+            <path d="M 80 0 L 80 20 L 60 0 Z" fill="#CC785C"/>
+            <path d="M 60 0 L 80 20" stroke="#9C5C44" stroke-width="0.6" fill="none" opacity="0.45"/>
+          </svg>
+        </div><div class="size-label">64px</div></div>
+
+        <div class="size-cell"><div class="size-32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="22" y="62" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-size="64" fill="#191919">F</text>
+            <path d="M 80 0 L 80 20 L 60 0 Z" fill="#CC785C"/>
+            <path d="M 60 0 L 80 20" stroke="#9C5C44" stroke-width="0.6" fill="none" opacity="0.45"/>
+          </svg>
+        </div><div class="size-label">32px</div></div>
+
+        <div class="size-cell"><div class="size-16">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="22" y="62" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-size="64" fill="#191919">F</text>
+            <path d="M 80 0 L 80 20 L 60 0 Z" fill="#CC785C"/>
+            <path d="M 60 0 L 80 20" stroke="#9C5C44" stroke-width="0.6" fill="none" opacity="0.45"/>
+          </svg>
+        </div><div class="size-label">16px</div></div>
+      </div>
+      <p class="why">衬线大写 <em>F</em> 占主体，右上角 caramel 折页三角呼应 "folio = 一张折起的纸"。<em>F</em> 走 Source Serif 4，跟整套字体系一脉相承。独特度高，跟 Anthropic 的 ✻ 完全不撞。</p>
+      <div class="verdict good">推荐 — 独特 / 概念 / 多尺寸都立得住</div>
+    </section>
+
+    <!-- ========== Option 2: 对开本剖面 ========== -->
+    <section class="card">
+      <h2>2 · 对开本剖面</h2>
+      <div class="caption">geometric · open spread</div>
+      <div class="preview-row">
+        <div class="size-cell"><div class="size-128">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <rect x="16" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <rect x="42" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <line x1="40" y1="18" x2="40" y2="62" stroke="#CC785C" stroke-width="2.6" stroke-linecap="round"/>
+            <g stroke="#191919" stroke-width="1" opacity="0.18">
+              <line x1="20" y1="30" x2="34" y2="30"/>
+              <line x1="20" y1="36" x2="34" y2="36"/>
+              <line x1="20" y1="42" x2="32" y2="42"/>
+              <line x1="46" y1="30" x2="60" y2="30"/>
+              <line x1="46" y1="36" x2="60" y2="36"/>
+              <line x1="46" y1="42" x2="58" y2="42"/>
+            </g>
+          </svg>
+        </div><div class="size-label">128px</div></div>
+
+        <div class="size-cell"><div class="size-64">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <rect x="16" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <rect x="42" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <line x1="40" y1="18" x2="40" y2="62" stroke="#CC785C" stroke-width="2.6" stroke-linecap="round"/>
+            <g stroke="#191919" stroke-width="1" opacity="0.18">
+              <line x1="20" y1="30" x2="34" y2="30"/>
+              <line x1="20" y1="36" x2="34" y2="36"/>
+              <line x1="20" y1="42" x2="32" y2="42"/>
+              <line x1="46" y1="30" x2="60" y2="30"/>
+              <line x1="46" y1="36" x2="60" y2="36"/>
+              <line x1="46" y1="42" x2="58" y2="42"/>
+            </g>
+          </svg>
+        </div><div class="size-label">64px</div></div>
+
+        <div class="size-cell"><div class="size-32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <rect x="16" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <rect x="42" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <line x1="40" y1="18" x2="40" y2="62" stroke="#CC785C" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+        </div><div class="size-label">32px</div></div>
+
+        <div class="size-cell"><div class="size-16">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <rect x="16" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <rect x="42" y="20" width="22" height="40" rx="1.5" fill="none" stroke="#191919" stroke-width="2.4"/>
+            <line x1="40" y1="18" x2="40" y2="62" stroke="#CC785C" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+        </div><div class="size-label">16px</div></div>
+      </div>
+      <p class="why">两页对开 + caramel 装订线 + 极淡的"文字行"暗示。最纯粹的 folio 字面图形，<em>没有依赖任何字体</em>，单色多色都能用。但需要一定尺寸才能看清"两页"的概念，16px 接近抽象。</p>
+      <div class="verdict mid">中等 — 概念清晰但 16px 损失内容</div>
+    </section>
+
+    <!-- ========== Option 3: ¶ pilcrow ========== -->
+    <section class="card">
+      <h2>3 · ¶ pilcrow</h2>
+      <div class="caption">editorial mark · paragraph sign</div>
+      <div class="preview-row">
+        <div class="size-cell"><div class="size-128">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="40" y="60" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="58" text-anchor="middle" fill="#CC785C">¶</text>
+          </svg>
+        </div><div class="size-label">128px</div></div>
+
+        <div class="size-cell"><div class="size-64">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="40" y="60" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="58" text-anchor="middle" fill="#CC785C">¶</text>
+          </svg>
+        </div><div class="size-label">64px</div></div>
+
+        <div class="size-cell"><div class="size-32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="40" y="60" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="58" text-anchor="middle" fill="#CC785C">¶</text>
+          </svg>
+        </div><div class="size-label">32px</div></div>
+
+        <div class="size-cell"><div class="size-16">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="40" y="60" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="58" text-anchor="middle" fill="#CC785C">¶</text>
+          </svg>
+        </div><div class="size-label">16px</div></div>
+      </div>
+      <p class="why">编辑 / 出版业的标志符号 <em>¶</em> 直接做 logo。装逼指数高、和"杂志/编辑"调性贴近。但 ¶ 在大多数人眼里没有"folio = 工作区"的语义连接，需要品牌教育才认得。</p>
+      <div class="verdict mid">中等 — 调性贴 / 但语义需教育</div>
+    </section>
+
+    <!-- ========== Option 4: ✻ + F 角标 ========== -->
+    <section class="card">
+      <h2>4 · ✻ + F 角标</h2>
+      <div class="caption">retain asterisk · italic F badge</div>
+      <div class="preview-row">
+        <div class="size-cell"><div class="size-128">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="34" y="56" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="54" text-anchor="middle" fill="#CC785C">✻</text>
+            <text x="63" y="69" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-style="italic" font-size="22" text-anchor="middle" fill="#191919">F</text>
+          </svg>
+        </div><div class="size-label">128px</div></div>
+
+        <div class="size-cell"><div class="size-64">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="34" y="56" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="54" text-anchor="middle" fill="#CC785C">✻</text>
+            <text x="63" y="69" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-style="italic" font-size="22" text-anchor="middle" fill="#191919">F</text>
+          </svg>
+        </div><div class="size-label">64px</div></div>
+
+        <div class="size-cell"><div class="size-32">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="34" y="56" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="54" text-anchor="middle" fill="#CC785C">✻</text>
+            <text x="63" y="69" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-style="italic" font-size="22" text-anchor="middle" fill="#191919">F</text>
+          </svg>
+        </div><div class="size-label">32px</div></div>
+
+        <div class="size-cell"><div class="size-16">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+            <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+            <text x="34" y="56" font-family="Source Serif 4, Georgia, serif" font-weight="500" font-size="54" text-anchor="middle" fill="#CC785C">✻</text>
+            <text x="63" y="69" font-family="Source Serif 4, Georgia, serif" font-weight="600" font-style="italic" font-size="22" text-anchor="middle" fill="#191919">F</text>
+          </svg>
+        </div><div class="size-label">16px</div></div>
+      </div>
+      <p class="why">主体仍是 ✻，右下角加 italic <em>F</em> 角标。改动量最小、保留现有视觉记忆，但根本问题没解决：主体还是 Anthropic 一样的 6-point 星，<em>F</em> 只是后贴标记。</p>
+      <div class="verdict weak">不推荐 — 治标不治本</div>
+    </section>
+
+  </div>
+
+  <footer style="margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); font-family: 'Source Serif 4', serif; font-style: italic; color: var(--ink-3); font-size: 13px;">
+    All four use cream <code>#F5F0E5</code> paper · caramel <code>#CC785C</code> · ink <code>#191919</code>.
+    Rounded square 80×80 viewBox at radius 18, scales cleanly.
+  </footer>
+</div>
+</body>
+</html>

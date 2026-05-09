@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Risograph Print</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F4EBD3; --paper-2:#EDE0BF; --ink:#1A140A;
+    --red:#FF5037; --blue:#3247B5; --teal:#1F8B8B; --ochre:#E0A03A; --sage:#8FA876;
+    --line:rgba(26,20,10,.18); --line-2:rgba(26,20,10,.32);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Space Grotesk",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+    background:var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px,rgba(26,20,10,.10) 1px,transparent 0),
+      radial-gradient(circle at 8px 4px,rgba(255,80,55,.07) 1px,transparent 0);
+    background-size:6px 6px, 12px 12px;
+  }
+  /* paper grain overlay */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.45;mix-blend-mode:multiply;
+    background:
+      radial-gradient(2px 1px at 20% 30%,rgba(26,20,10,.06),transparent 70%),
+      radial-gradient(1px 2px at 80% 80%,rgba(26,20,10,.05),transparent 70%),
+      radial-gradient(2px 2px at 50% 60%,rgba(50,71,181,.06),transparent 70%);
+    background-size:230px 200px,180px 220px,260px 240px;
+  }
+  .serif{font-family:"Playfair Display",Georgia,serif;letter-spacing:-.01em}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+  .offreg{position:relative;display:inline-block}
+  .offreg::before{
+    content:attr(data-text);position:absolute;left:-2px;top:1px;color:var(--red);
+    z-index:-1;mix-blend-mode:multiply;opacity:.85;
+  }
+  .offreg::after{
+    content:attr(data-text);position:absolute;left:2px;top:-1px;color:var(--blue);
+    z-index:-1;mix-blend-mode:multiply;opacity:.85;
+  }
+  .halftone{
+    background-image:radial-gradient(circle at center,currentColor 1.5px,transparent 1.5px);
+    background-size:8px 8px;
+  }
+  /* shell */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:280px 1fr;min-height:100vh;max-width:1400px;margin:0 auto;padding:0 24px}
+  /* sidebar */
+  .side{
+    border-right:2px solid var(--ink);padding:30px 22px 30px 0;background:transparent;
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;gap:18px;
+  }
+  .masthead{
+    border:2px solid var(--ink);background:var(--ink);color:var(--paper);
+    padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+    box-shadow:5px 5px 0 var(--red);
+  }
+  .masthead h1{margin:0;font-family:"Playfair Display";font-weight:900;font-size:22px;letter-spacing:-.01em;line-height:1}
+  .masthead .issue{font-family:"JetBrains Mono";font-size:10px;letter-spacing:.18em;color:var(--ochre);margin-top:4px}
+  .ws{
+    border:2px solid var(--ink);padding:12px 14px;display:flex;align-items:center;gap:12px;
+    background:var(--paper-2);
+  }
+  .ws .av{
+    width:36px;height:36px;border:2px solid var(--ink);background:var(--red);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-family:"Playfair Display";font-weight:900;font-style:italic;
+  }
+  .ws .name{font-weight:700;font-size:14px;line-height:1.1}
+  .ws .meta{font-family:"JetBrains Mono";font-size:11px;color:var(--ink);opacity:.7}
+  .nav-section-title{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;color:var(--ink);opacity:.7;
+    text-transform:uppercase;margin:6px 0 0;display:flex;align-items:center;gap:10px;
+  }
+  .nav-section-title::before{content:"";display:block;width:14px;height:2px;background:var(--red)}
+  .nav{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:11px 4px;
+    font-size:14.5px;font-weight:500;color:var(--ink);border-bottom:1px solid var(--line);
+  }
+  .nav button:last-child{border-bottom:none}
+  .nav button .num{font-family:"JetBrains Mono";font-size:11px;color:var(--red);width:22px}
+  .nav button:hover{color:var(--red)}
+  .nav button.active{color:var(--blue);font-weight:700}
+  .nav button.active .num{color:var(--blue)}
+  .nav .badge{
+    margin-left:auto;font-family:"JetBrains Mono";font-size:11px;color:var(--ink);
+    border:1px solid var(--ink);padding:1px 8px;
+  }
+  .nav button.active .badge{background:var(--blue);color:var(--paper);border-color:var(--blue)}
+  .colophon{
+    margin-top:auto;font-family:"Playfair Display";font-style:italic;
+    font-size:13px;line-height:1.5;color:var(--ink);opacity:.85;border-top:2px solid var(--ink);padding-top:14px;
+  }
+  .colophon b{font-style:normal;font-family:"Space Grotesk";font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;font-size:11px;color:var(--red)}
+
+  /* main */
+  .main{padding:24px 0 60px 28px;border-left:2px solid var(--ink);margin-left:-2px}
+  .topbar{
+    display:flex;align-items:center;gap:14px;margin-bottom:28px;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;
+  }
+  .topbar .date{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.18em;color:var(--ink)}
+  .topbar .vol{margin-left:auto;font-family:"JetBrains Mono";font-size:11px;color:var(--ink);opacity:.7;letter-spacing:.16em}
+  .topbar .badge{
+    border:2px solid var(--red);color:var(--red);padding:4px 10px;font-family:"Playfair Display";font-style:italic;font-size:14px;font-weight:700;
+  }
+  .search{
+    flex:1;padding:8px 14px;border:1px solid var(--ink);background:var(--paper-2);
+    display:flex;align-items:center;gap:10px;color:var(--ink);font-size:13px;
+  }
+  .search .kbd{margin-left:auto;font-family:"JetBrains Mono";font-size:10px;letter-spacing:.06em;border:1px solid var(--ink);padding:0 6px}
+
+  /* hero / feature article */
+  .hero{
+    border-top:2px solid var(--ink);border-bottom:6px double var(--ink);padding:36px 0 30px;margin-bottom:28px;
+    display:grid;grid-template-columns:1fr 220px;gap:32px;align-items:end;
+  }
+  .hero .kicker{
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.22em;color:var(--red);margin-bottom:10px;
+    display:flex;gap:14px;align-items:center;text-transform:uppercase;
+  }
+  .hero .kicker::before{content:"";display:inline-block;width:30px;height:2px;background:var(--red)}
+  .hero h2{
+    font-family:"Playfair Display";font-weight:900;font-size:64px;line-height:.96;margin:0;
+    letter-spacing:-.025em;color:var(--ink);
+  }
+  .hero h2 em{font-weight:700;color:var(--red);font-style:italic;text-decoration:underline;text-decoration-color:var(--blue);text-underline-offset:6px;text-decoration-thickness:3px}
+  .hero .lede{
+    font-family:"Playfair Display";font-style:italic;font-size:18px;line-height:1.5;
+    margin:18px 0 0;color:var(--ink);max-width:640px;
+  }
+  .hero .lede::first-letter{
+    font-size:54px;font-weight:900;font-style:normal;float:left;line-height:.85;margin:6px 8px -2px 0;color:var(--red);
+  }
+  .hero aside{
+    border-left:2px solid var(--ink);padding:14px 0 14px 18px;
+    font-family:"Space Grotesk";font-size:12.5px;line-height:1.5;color:var(--ink);
+  }
+  .hero aside h4{margin:0 0 6px;font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;color:var(--ink);text-transform:uppercase}
+  .hero aside ol{padding-left:16px;margin:8px 0 0}
+  .hero aside li{margin-bottom:4px}
+  .hero aside li b{color:var(--red)}
+
+  /* numbered section */
+  .section{margin:36px 0 8px;display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--line-2);padding-bottom:8px}
+  .section .num{font-family:"Playfair Display";font-weight:900;font-style:italic;font-size:42px;line-height:1;color:var(--red)}
+  .section h3{margin:0;font-family:"Playfair Display";font-weight:700;font-size:24px;letter-spacing:-.01em}
+  .section .meta{margin-left:auto;font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;color:var(--ink);opacity:.7}
+
+  /* stats grid */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:2px solid var(--ink);background:var(--paper-2);margin-bottom:30px}
+  .stat{padding:22px;border-right:2px solid var(--ink);position:relative;overflow:hidden}
+  .stat:last-child{border-right:none}
+  .stat .label{
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;color:var(--ink);opacity:.7;
+    text-transform:uppercase;margin-bottom:8px;
+  }
+  .stat .num{font-family:"Playfair Display";font-weight:900;font-size:54px;line-height:.95;color:var(--ink)}
+  .stat.red .num{color:var(--red)}
+  .stat.blue .num{color:var(--blue)}
+  .stat .meta{font-size:13px;line-height:1.4;margin-top:6px;color:var(--ink);opacity:.85}
+  .stat .ht{
+    position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;color:var(--red);
+    background-image:radial-gradient(circle at center,currentColor 1.5px,transparent 1.5px);
+    background-size:8px 8px;opacity:.45;
+  }
+  .stat.blue .ht{color:var(--blue)}
+  .stat.red .ht{color:var(--red)}
+
+  /* 2-col article */
+  .two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:28px;margin-bottom:14px}
+  @media (max-width:1080px){.two-col{grid-template-columns:1fr}}
+  /* tasks */
+  .tasks{display:flex;flex-direction:column;gap:0;border-top:2px solid var(--ink)}
+  .task{
+    display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:baseline;padding:14px 0;
+    border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .task:hover{background:var(--paper-2)}
+  .task .id{font-family:"JetBrains Mono";font-size:11px;color:var(--ink);opacity:.6;letter-spacing:.06em;min-width:80px}
+  .task .title{font-family:"Playfair Display";font-weight:700;font-size:18px;line-height:1.25;letter-spacing:-.01em}
+  .task .meta{font-size:12.5px;color:var(--ink);opacity:.75;margin-top:3px;font-style:italic;font-family:"Playfair Display"}
+  .task .status{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border:1.5px solid var(--ink);
+  }
+  .status.todo{color:var(--ink);opacity:.85}
+  .status.doing{color:var(--paper);background:var(--blue);border-color:var(--blue)}
+  .status.review{color:var(--ink);background:var(--ochre);border-color:var(--ink)}
+  .status.active{color:var(--paper);background:var(--red);border-color:var(--red)}
+
+  /* agents column */
+  .agents{display:flex;flex-direction:column;gap:14px;border-top:2px solid var(--ink);padding-top:18px}
+  .agent{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:start}
+  .agent .av{
+    width:60px;height:60px;border:2px solid var(--ink);background:var(--paper-2);
+    display:flex;align-items:center;justify-content:center;font-family:"Playfair Display";
+    font-weight:900;font-style:italic;font-size:24px;color:var(--red);position:relative;
+  }
+  .agent.row2 .av{color:var(--blue)}
+  .agent.row3 .av{color:var(--ink);opacity:.55}
+  .agent.row4 .av{color:var(--teal)}
+  .agent .name{font-family:"Playfair Display";font-weight:700;font-size:18px;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+  .agent .doing{font-size:13px;line-height:1.5;color:var(--ink);font-style:italic;font-family:"Playfair Display"}
+  .agent .progress{
+    margin-top:8px;display:flex;align-items:center;gap:10px;font-family:"JetBrains Mono";font-size:11px;color:var(--ink);
+  }
+  .agent .progress .bar{
+    flex:1;max-width:160px;height:8px;border:1.5px solid var(--ink);background:var(--paper);position:relative;overflow:hidden;
+  }
+  .agent .progress .bar i{display:block;height:100%;background:var(--red);
+    background-image:linear-gradient(45deg,rgba(255,255,255,.4) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.4) 50%,rgba(255,255,255,.4) 75%,transparent 75%);
+    background-size:8px 8px;}
+  .agent.row2 .progress .bar i{background:var(--blue);background-image:linear-gradient(45deg,rgba(255,255,255,.4) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.4) 50%,rgba(255,255,255,.4) 75%,transparent 75%);background-size:8px 8px}
+  .agent.row4 .progress .bar i{background:var(--teal)}
+  .pulse{
+    width:9px;height:9px;border-radius:50%;background:var(--red);
+    box-shadow:0 0 0 0 rgba(255,80,55,.7);animation:beat 1.6s ease-out infinite;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(255,80,55,.7)}
+    70%{box-shadow:0 0 0 11px rgba(255,80,55,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,80,55,0)}
+  }
+
+  /* feed (3 col print) */
+  .feed{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+  .ch{padding:18px 18px 18px 0;border-right:1px solid var(--line);cursor:pointer;position:relative}
+  .ch:nth-child(3n){border-right:none}
+  .ch:not(:nth-child(-n+3)){border-top:1px solid var(--line)}
+  .ch .tag{font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.16em;color:var(--red);text-transform:uppercase}
+  .ch.calm .tag{color:var(--blue)}
+  .ch .who{font-family:"Playfair Display";font-weight:700;font-size:16px;margin:6px 0 4px;letter-spacing:-.01em}
+  .ch .body{font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .ch .body em{
+    background:linear-gradient(120deg,transparent 0,transparent 30%,var(--ochre) 30%,var(--ochre) 70%,transparent 70%);
+    color:var(--ink);font-style:normal;
+  }
+  .ch .when{font-family:"JetBrains Mono";font-size:10.5px;color:var(--ink);opacity:.6;margin-top:8px}
+  .ch.alert::after{
+    content:attr(data-unread);position:absolute;right:0;top:14px;background:var(--red);color:var(--paper);
+    width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+    font-family:"Playfair Display";font-weight:900;font-style:italic;font-size:14px;
+  }
+  /* CTA — print-style ad block */
+  .ads{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:28px}
+  .ad{
+    border:2px solid var(--ink);padding:16px 18px;cursor:pointer;
+    background:var(--paper-2);position:relative;overflow:hidden;
+  }
+  .ad:hover{box-shadow:5px 5px 0 var(--red)}
+  .ad.b:hover{box-shadow:5px 5px 0 var(--blue)}
+  .ad.c:hover{box-shadow:5px 5px 0 var(--ochre)}
+  .ad .corner{
+    position:absolute;right:-8px;top:-8px;font-family:"Playfair Display";font-weight:900;font-style:italic;
+    font-size:60px;color:var(--red);opacity:.15;line-height:1;
+  }
+  .ad.b .corner{color:var(--blue)}
+  .ad.c .corner{color:var(--ochre)}
+  .ad h3{margin:0;font-family:"Playfair Display";font-weight:900;font-size:22px;letter-spacing:-.01em}
+  .ad .small{font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.16em;color:var(--ink);opacity:.7;text-transform:uppercase;margin-bottom:6px}
+  .ad p{margin:6px 0 12px;font-family:"Playfair Display";font-style:italic;font-size:13.5px;line-height:1.45}
+  .ad .arr{font-family:"Playfair Display";font-weight:700;font-size:14px;color:var(--ink)}
+  .ad .arr::after{content:"  ↗";color:var(--red);font-style:italic}
+  .ad.b .arr::after{color:var(--blue)}
+  .ad.c .arr::after{color:var(--ochre)}
+
+  /* back */
+  .back{
+    position:fixed;left:18px;top:14px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    border:2px solid var(--ink);background:var(--paper);padding:5px 12px;text-decoration:none;color:var(--ink);
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    box-shadow:3px 3px 0 var(--red);
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← BACK</a>
+  <div class="app">
+    <aside class="side">
+      <div class="masthead">
+        <div>
+          <h1>FOLIO</h1>
+          <div class="issue">VOL.04 · ISSUE 12 · MAY 2026</div>
+        </div>
+      </div>
+      <div class="ws">
+        <div class="av">M</div>
+        <div>
+          <div class="name">Folio · 设计组</div>
+          <div class="meta">15 PERSONS · 6 BOTS</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Sections</div>
+      <div class="nav">
+        <button class="active"><span class="num">01</span>Dashboard</button>
+        <button><span class="num">02</span>Issues<span class="badge">12</span></button>
+        <button><span class="num">03</span>Channels<span class="badge">3</span></button>
+        <button><span class="num">04</span>Skills</button>
+        <button><span class="num">05</span>Agents<span class="badge">6</span></button>
+        <button><span class="num">06</span>Autopilots</button>
+      </div>
+
+      <div class="colophon">
+        <b>Colophon</b><br/>
+        Set in <i>Playfair Display</i> &amp; <i>Space Grotesk</i>. Printed in two-tone risograph red &amp; blue, on cream paper. Edited from your dashboard, daily.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="date mono">FRI · MAY 8 · 2026</div>
+        <div class="search">
+          <span class="serif" style="font-style:italic">Search</span>
+          <span style="opacity:.7">Issues, channels, agents…</span>
+          <span class="kbd">⌘ K</span>
+        </div>
+        <div class="badge">Vol. 04</div>
+      </div>
+
+      <section class="hero">
+        <div>
+          <div class="kicker">FRONT PAGE · DAILY DIGEST</div>
+          <h2 class="serif">嗨 林一，<em>今天的稿子</em><br/>已经印好了。</h2>
+          <p class="lede">UI 设计师正在为多巴胺方向画第二轮草图（78%）；资深开发刚 ship 了 reasoning 过滤；测试工程师跑着 e2e。频道里 Alice 已经发表对新 UI 的意见——你有 3 件事可以选着做。</p>
+        </div>
+        <aside>
+          <h4>WHAT'S INSIDE</h4>
+          <ol>
+            <li><b>01.</b> 12 个进行中 issue · 2 待 review</li>
+            <li><b>02.</b> 4/6 智能体在线，UI 78%</li>
+            <li><b>03.</b> #全员群 有 3 条新消息</li>
+            <li><b>04.</b> 你的本周连续打卡：7 天</li>
+          </ol>
+        </aside>
+      </section>
+
+      <div class="section">
+        <div class="num">01</div>
+        <h3 class="serif">By the numbers</h3>
+        <div class="meta mono">// auto-tracked</div>
+      </div>
+      <section class="stats">
+        <div class="stat red">
+          <div class="ht"></div>
+          <div class="label">OPEN ISSUES</div>
+          <div class="num">12</div>
+          <div class="meta">+3 这周新建 · 2 待你 review</div>
+        </div>
+        <div class="stat blue">
+          <div class="ht"></div>
+          <div class="label">AGENTS WORKING</div>
+          <div class="num">4 / 6</div>
+          <div class="meta">UI 78% · DEV 41% · QA 12%</div>
+        </div>
+        <div class="stat">
+          <div class="ht"></div>
+          <div class="label">UNREAD CHANNELS</div>
+          <div class="num">3</div>
+          <div class="meta">#全员群 · 13:42 by Alice</div>
+        </div>
+      </section>
+
+      <div class="two-col">
+        <div>
+          <div class="section">
+            <div class="num">02</div>
+            <h3 class="serif">Your tasks</h3>
+            <div class="meta mono">// 4 items</div>
+          </div>
+          <div class="tasks">
+            <div class="task">
+              <div class="id mono">MUL-128</div>
+              <div>
+                <div class="title">重构频道消息列表的滚动行为</div>
+                <div class="meta">— 资深开发 正在生成 PR · 12 分钟前更新</div>
+              </div>
+              <div class="status doing">DOING</div>
+            </div>
+            <div class="task">
+              <div class="id mono">MUL-131</div>
+              <div>
+                <div class="title">@-mention picker 过滤策略 + IME guard</div>
+                <div class="meta">— UI 设计师 提交了变更，等你 review</div>
+              </div>
+              <div class="status review">REVIEW</div>
+            </div>
+            <div class="task">
+              <div class="id mono">MUL-105</div>
+              <div>
+                <div class="title">Dashboard 多巴胺方向探索</div>
+                <div class="meta">— 你 自己起的，4 个方向 mockup 已生成</div>
+              </div>
+              <div class="status active">ACTIVE</div>
+            </div>
+            <div class="task">
+              <div class="id mono">MUL-119</div>
+              <div>
+                <div class="title">rate-limit 配置面板</div>
+                <div class="meta">— 未指派 · 估时 2 天</div>
+              </div>
+              <div class="status todo">TODO</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section">
+            <div class="num">03</div>
+            <h3 class="serif">Active agents</h3>
+            <div class="meta mono">// 4/6 live</div>
+          </div>
+          <div class="agents">
+            <div class="agent row1">
+              <div class="av">U</div>
+              <div>
+                <div class="name">UI 设计师 <span class="pulse"></span></div>
+                <div class="doing">为 MUL-105 生成多巴胺草图</div>
+                <div class="progress"><span class="bar"><i style="width:78%"></i></span><span>78%</span></div>
+              </div>
+            </div>
+            <div class="agent row2">
+              <div class="av">D</div>
+              <div>
+                <div class="name">资深开发</div>
+                <div class="doing">重写 daemon channel 路径</div>
+                <div class="progress"><span class="bar"><i style="width:41%"></i></span><span>41%</span></div>
+              </div>
+            </div>
+            <div class="agent row3">
+              <div class="av">A</div>
+              <div>
+                <div class="name">系统架构师</div>
+                <div class="doing">空闲 · 上次回复 6 分钟前</div>
+                <div class="progress"><span class="bar"><i style="width:0%"></i></span><span>idle</span></div>
+              </div>
+            </div>
+            <div class="agent row4">
+              <div class="av">Q</div>
+              <div>
+                <div class="name">测试工程师</div>
+                <div class="doing">e2e 频道金路径回归</div>
+                <div class="progress"><span class="bar"><i style="width:12%"></i></span><span>12%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="num">04</div>
+        <h3 class="serif">Channel feed</h3>
+        <div class="meta mono">// 3 unread · last 13:42</div>
+      </div>
+      <section class="feed">
+        <div class="ch alert" data-unread="3">
+          <div class="tag"># 全员群</div>
+          <div class="who">Alice</div>
+          <div class="body">新版 UI 大家给点 <em>反馈</em>！我倾向 5 号方向，复古印刷感最舒服，看得久也不累眼。</div>
+          <div class="when">13:42 · 3 NEW</div>
+        </div>
+        <div class="ch">
+          <div class="tag"># 设计讨论</div>
+          <div class="who">UI 设计师</div>
+          <div class="body">三个核心：(1) 双色油墨 + 半色调点；(2) Playfair 大标题；(3) 数字/计量用 mono。</div>
+          <div class="when">13:38</div>
+        </div>
+        <div class="ch calm">
+          <div class="tag"># ai-experiments</div>
+          <div class="who">系统架构师</div>
+          <div class="body">从架构角度，print 风格在长列表上信息密度高，但要警惕过载；建议把数字数据单独抽成 stat 区。</div>
+          <div class="when">11:01</div>
+        </div>
+      </section>
+
+      <section class="ads">
+        <div class="ad">
+          <div class="corner">+</div>
+          <div class="small">CLASSIFIED · 01</div>
+          <h3>New Issue</h3>
+          <p>把脑子里那个事记下来，不然就溜了。</p>
+          <div class="arr">Open the form</div>
+        </div>
+        <div class="ad b">
+          <div class="corner">+</div>
+          <div class="small">CLASSIFIED · 02</div>
+          <h3>New Channel</h3>
+          <p>找几个智能体，开个新频道讨论。</p>
+          <div class="arr">Spin up a room</div>
+        </div>
+        <div class="ad c">
+          <div class="corner">+</div>
+          <div class="small">CLASSIFIED · 03</div>
+          <h3>New Agent</h3>
+          <p>训一个会写代码、会聊天的人形。</p>
+          <div class="arr">Define one</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Pop Brutalism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Archivo+Black&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#000; --paper:#FFF7E5; --pink:#FF3D7F; --lime:#B6FF6E;
+    --blue:#2EC4FF; --yellow:#FFE552; --coral:#FF6B5C; --violet:#C8A6FF;
+    --shadow:8px 8px 0 0 var(--ink);
+    --shadow-sm:5px 5px 0 0 var(--ink);
+    --shadow-xs:3px 3px 0 0 var(--ink);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter","Space Grotesk",system-ui,sans-serif;
+    color:var(--ink);background:var(--paper);min-height:100vh;
+    background-image:
+      radial-gradient(circle at 1px 1px,rgba(0,0,0,.18) 1px,transparent 0);
+    background-size:24px 24px;
+  }
+  .display{font-family:"Archivo Black","Space Grotesk",sans-serif;letter-spacing:-.02em}
+  .mono{font-family:ui-monospace,Menlo,monospace}
+  .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  /* sidebar */
+  .side{
+    border-right:3px solid var(--ink);background:var(--paper);
+    padding:24px 18px;position:sticky;top:0;height:100vh;
+  }
+  .brand{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--ink);color:var(--yellow);
+    border:3px solid var(--ink);box-shadow:var(--shadow-xs);
+    padding:8px 14px;font-family:"Archivo Black";font-size:18px;letter-spacing:.04em;
+    transform:rotate(-2deg);margin-bottom:24px;
+  }
+  .brand .dot{width:10px;height:10px;background:var(--pink);border:2px solid var(--yellow);border-radius:50%}
+  .ws{
+    border:3px solid var(--ink);background:#fff;box-shadow:var(--shadow-xs);
+    padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:18px;
+  }
+  .ws .avatar{
+    width:32px;height:32px;border:3px solid var(--ink);background:var(--lime);
+    display:flex;align-items:center;justify-content:center;font-family:"Archivo Black";
+  }
+  .ws .name{font-weight:700;font-size:14px;line-height:1.1}
+  .ws .members{font-size:11px;color:#444}
+  .nav{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;
+    padding:10px 12px;border:3px solid var(--ink);background:#fff;
+    font-weight:600;font-size:14.5px;
+  }
+  .nav button.active{background:var(--pink);color:#fff;box-shadow:var(--shadow-xs);transform:translate(-2px,-2px)}
+  .nav button:hover{box-shadow:var(--shadow-xs);transform:translate(-2px,-2px)}
+  .nav .badge{margin-left:auto;font-family:"Archivo Black";font-size:11px;
+    background:var(--ink);color:var(--yellow);padding:1px 8px}
+  .nav .icon{
+    width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+    border:2px solid currentColor;font-size:13px;font-family:"Archivo Black";
+  }
+  .nav-section-title{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5b5b5b;
+    margin:18px 0 4px 4px;font-weight:700;
+  }
+  .footer-card{
+    margin-top:24px;border:3px solid var(--ink);background:var(--blue);
+    padding:12px;box-shadow:var(--shadow-xs);font-size:13px;line-height:1.4;
+  }
+  .footer-card b{font-family:"Archivo Black";letter-spacing:.04em}
+  /* main */
+  .main{padding:28px 36px 60px;max-width:1280px;width:100%}
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:28px}
+  .search{
+    flex:1;border:3px solid var(--ink);background:#fff;box-shadow:var(--shadow-xs);
+    padding:12px 16px;display:flex;align-items:center;gap:10px;font-weight:600;color:#777;
+  }
+  .search .kbd{
+    margin-left:auto;border:2px solid var(--ink);padding:1px 8px;background:var(--yellow);
+    font-family:"Archivo Black";font-size:11px;
+  }
+  .iconbtn{
+    width:46px;height:46px;border:3px solid var(--ink);background:#fff;
+    box-shadow:var(--shadow-xs);display:inline-flex;align-items:center;justify-content:center;
+    font-family:"Archivo Black";cursor:pointer;
+  }
+  .iconbtn.bell{background:var(--lime)}
+  .iconbtn.user{background:var(--violet)}
+  /* hero */
+  .hero{
+    border:3px solid var(--ink);background:var(--yellow);box-shadow:var(--shadow);
+    padding:24px 26px;margin-bottom:28px;position:relative;overflow:hidden;
+  }
+  .hero h1{
+    font-family:"Archivo Black";font-size:42px;line-height:1;margin:0;letter-spacing:-.02em;
+  }
+  .hero h1 .pill{
+    display:inline-block;background:var(--ink);color:var(--yellow);padding:0 14px;
+    transform:rotate(-2deg) translateY(-4px);margin:0 6px;border:3px solid var(--ink);
+    box-shadow:var(--shadow-xs);
+  }
+  .hero p{margin:14px 0 0;font-size:15.5px;line-height:1.55;max-width:640px;font-weight:500}
+  .hero .stamp{
+    position:absolute;right:24px;top:24px;width:120px;height:120px;border-radius:50%;
+    background:var(--coral);border:3px solid var(--ink);display:flex;align-items:center;
+    justify-content:center;text-align:center;color:#fff;font-family:"Archivo Black";
+    transform:rotate(8deg);box-shadow:var(--shadow-xs);font-size:18px;line-height:1;
+  }
+  .hero .squiggle{
+    position:absolute;left:-20px;bottom:-20px;width:120px;height:120px;background:var(--pink);
+    border:3px solid var(--ink);transform:rotate(20deg);
+  }
+  /* stats grid */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+  .stat{
+    border:3px solid var(--ink);box-shadow:var(--shadow-sm);padding:20px;position:relative;
+  }
+  .stat.pink{background:var(--pink);color:#fff}
+  .stat.lime{background:var(--lime)}
+  .stat.blue{background:var(--blue)}
+  .stat .label{font-size:12px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.85}
+  .stat .num{font-family:"Archivo Black";font-size:54px;line-height:1;margin:6px 0}
+  .stat .meta{font-size:13.5px;font-weight:500}
+  .stat .arrow{
+    position:absolute;right:14px;top:14px;width:34px;height:34px;border:3px solid var(--ink);
+    background:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:"Archivo Black";font-size:14px;color:#000;
+  }
+  /* main row */
+  .row{display:grid;grid-template-columns:1.4fr 1fr;gap:22px;margin-bottom:22px}
+  @media (max-width:1080px){.row{grid-template-columns:1fr}}
+  .card{
+    border:3px solid var(--ink);background:#fff;box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .card h2{font-family:"Archivo Black";font-size:22px;margin:0 0 14px}
+  .card .subtitle{font-size:13px;color:#444;margin-top:-8px;margin-bottom:14px}
+  .task{
+    display:grid;grid-template-columns:84px 1fr auto;align-items:center;gap:12px;
+    padding:12px;border:3px solid var(--ink);margin-bottom:10px;background:#fff;
+    transition:transform .12s ease,box-shadow .12s ease;cursor:pointer;
+  }
+  .task:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-xs)}
+  .task .id{
+    font-family:"Archivo Black";font-size:13px;background:var(--yellow);
+    border:3px solid var(--ink);padding:4px 8px;text-align:center;letter-spacing:.04em
+  }
+  .task .title{font-weight:600;font-size:14.5px;line-height:1.3}
+  .task .meta{font-size:12px;color:#555;margin-top:3px}
+  .task .status{font-family:"Archivo Black";font-size:11px;padding:5px 10px;border:3px solid var(--ink);letter-spacing:.06em}
+  .status.todo{background:#fff}
+  .status.doing{background:var(--lime)}
+  .status.review{background:var(--blue);color:#fff}
+  .status.active{background:var(--pink);color:#fff}
+  /* agent card */
+  .agents{display:flex;flex-direction:column;gap:12px}
+  .agent{
+    display:grid;grid-template-columns:48px 1fr auto;gap:14px;align-items:center;
+    padding:14px;border:3px solid var(--ink);background:var(--paper);
+  }
+  .agent.run{background:var(--lime)}
+  .agent.idle{background:#fff}
+  .agent .av{
+    width:48px;height:48px;border:3px solid var(--ink);display:flex;align-items:center;
+    justify-content:center;font-family:"Archivo Black";color:#fff;
+    background:var(--pink);
+  }
+  .agent.row1 .av{background:var(--pink)}
+  .agent.row2 .av{background:var(--blue)}
+  .agent.row3 .av{background:var(--violet);color:#000}
+  .agent.row4 .av{background:var(--coral)}
+  .agent .name{font-weight:700;font-size:14.5px}
+  .agent .doing{font-size:12.5px;color:#222;margin-top:2px}
+  .progress{width:120px;height:18px;border:3px solid var(--ink);background:#fff;position:relative;overflow:hidden}
+  .progress > i{display:block;height:100%;background:var(--ink)}
+  .progress::after{
+    content:attr(data-v);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"Archivo Black";font-size:11px;color:#fff;mix-blend-mode:difference;letter-spacing:.06em;
+  }
+  .agent .pulse{
+    width:14px;height:14px;border-radius:50%;background:var(--pink);border:2px solid var(--ink);
+    box-shadow:0 0 0 0 rgba(255,61,127,.7);animation:beat 1.6s ease-out infinite;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(255,61,127,.7)}
+    70%{box-shadow:0 0 0 12px rgba(255,61,127,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,61,127,0)}
+  }
+  /* channel feed */
+  .feed{
+    border:3px solid var(--ink);background:#fff;box-shadow:var(--shadow);padding:20px;
+  }
+  .feed h2{font-family:"Archivo Black";font-size:22px;margin:0 0 16px}
+  .ch{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;
+    padding:14px;border:3px solid var(--ink);margin-bottom:10px;background:#FFFEF6;cursor:pointer;
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .ch:hover{transform:translate(-2px,-2px);box-shadow:var(--shadow-xs)}
+  .ch .tag{
+    font-family:"Archivo Black";font-size:12px;background:var(--ink);color:var(--yellow);
+    padding:6px 10px;letter-spacing:.04em;
+  }
+  .ch.alert .tag{background:var(--pink);color:#fff}
+  .ch.calm .tag{background:var(--blue);color:#fff}
+  .ch .row{display:block}
+  .ch .who{font-weight:700;font-size:14px}
+  .ch .body{font-size:13.5px;line-height:1.45;color:#222;margin-top:3px}
+  .ch .body em{background:var(--yellow);padding:0 4px;font-style:normal;border:2px solid var(--ink)}
+  .ch .when{font-family:"Archivo Black";font-size:11px;letter-spacing:.06em;color:#444}
+  .ch .unread{
+    background:var(--coral);color:#fff;border:3px solid var(--ink);font-family:"Archivo Black";
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  }
+  /* CTA strip */
+  .cta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:22px}
+  .cta{
+    border:3px solid var(--ink);box-shadow:var(--shadow);padding:18px;
+    display:flex;align-items:center;gap:14px;cursor:pointer;
+    transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .cta:hover{transform:translate(-3px,-3px);box-shadow:11px 11px 0 0 var(--ink)}
+  .cta.pink{background:var(--pink);color:#fff}
+  .cta.lime{background:var(--lime)}
+  .cta.violet{background:var(--violet)}
+  .cta .plus{
+    width:46px;height:46px;border:3px solid var(--ink);background:#fff;color:#000;
+    display:flex;align-items:center;justify-content:center;font-family:"Archivo Black";font-size:24px;
+  }
+  .cta h3{font-family:"Archivo Black";margin:0;font-size:18px;letter-spacing:.02em}
+  .cta p{margin:2px 0 0;font-size:12.5px;font-weight:500}
+  /* sticker */
+  .sticker{
+    position:fixed;right:34px;bottom:30px;background:var(--ink);color:var(--yellow);
+    border:3px solid var(--ink);padding:14px 18px;box-shadow:var(--shadow);
+    font-family:"Archivo Black";letter-spacing:.04em;cursor:pointer;
+    transform:rotate(-3deg);user-select:none;
+  }
+  .sticker:hover{transform:rotate(-3deg) translate(-2px,-2px);box-shadow:11px 11px 0 0 var(--ink)}
+  .sticker .em{color:var(--pink)}
+  .back{
+    position:fixed;left:24px;top:18px;display:inline-flex;align-items:center;gap:8px;
+    background:var(--ink);color:var(--yellow);padding:6px 12px;border:3px solid var(--ink);
+    box-shadow:var(--shadow-xs);text-decoration:none;font-family:"Archivo Black";font-size:11px;
+    letter-spacing:.06em;z-index:50;
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← BACK</a>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="dot"></span>FOLIO</div>
+      <div class="ws">
+        <div class="avatar">设</div>
+        <div>
+          <div class="name">Folio · 设计组</div>
+          <div class="members">15 人 · 6 智能体</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">工作流</div>
+      <div class="nav">
+        <button class="active"><span class="icon">★</span>Dashboard</button>
+        <button><span class="icon">▤</span>Issues<span class="badge">12</span></button>
+        <button><span class="icon">⚑</span>Channels<span class="badge">3</span></button>
+        <button><span class="icon">⌘</span>Skills</button>
+      </div>
+
+      <div class="nav-section-title">AI</div>
+      <div class="nav">
+        <button><span class="icon">◎</span>Agents<span class="badge">6</span></button>
+        <button><span class="icon">⚙</span>Autopilots</button>
+      </div>
+
+      <div class="footer-card">
+        <b>新功能预览</b><br/>
+        @-mention picker 已 ship，
+        现在 thread drawer 也有 thinking 提示啦。
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span class="display">SEARCH</span>
+          <span style="color:#bbb">Issues, Channels, Agents…</span>
+          <span class="kbd">⌘ K</span>
+        </div>
+        <button class="iconbtn bell">🔔</button>
+        <button class="iconbtn user">林</button>
+      </div>
+
+      <section class="hero">
+        <h1>嗨 林一， <span class="pill">今天</span> 也<br/>来 ship 点 <span class="pill">很顶</span> 的东西。</h1>
+        <p>你有 3 个进行中的任务，UI 设计师正在为多巴胺方向画第二轮草图。资深开发刚完成了 channel 的 reasoning 过滤，要不要先看看？</p>
+        <div class="stamp">SHIP<br/>WHAT<br/>YOU LOVE</div>
+        <div class="squiggle"></div>
+      </section>
+
+      <section class="stats">
+        <div class="stat pink">
+          <div class="label">Open Issues</div>
+          <div class="num">12</div>
+          <div class="meta">+3 这周新建 · 2 待你 review</div>
+          <div class="arrow">↗</div>
+        </div>
+        <div class="stat lime">
+          <div class="label">Agents Working</div>
+          <div class="num">4 / 6</div>
+          <div class="meta">UI 设计师 78% · 资深开发 41%</div>
+          <div class="arrow">●</div>
+        </div>
+        <div class="stat blue">
+          <div class="label">Unread Channels</div>
+          <div class="num">3</div>
+          <div class="meta">#全员群 有 3 条新消息</div>
+          <div class="arrow">→</div>
+        </div>
+      </section>
+
+      <section class="row">
+        <div class="card">
+          <h2>YOUR TASKS</h2>
+          <p class="subtitle">分配给你的 4 个任务，按优先级排序。</p>
+          <div class="task" onclick="this.classList.toggle('done')">
+            <div class="id">MUL-128</div>
+            <div>
+              <div class="title">重构频道消息列表的滚动行为</div>
+              <div class="meta">资深开发 正在生成 PR · 提交于 12 分钟前</div>
+            </div>
+            <div class="status doing">DOING</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-131</div>
+            <div>
+              <div class="title">@-mention picker 的过滤策略 + IME</div>
+              <div class="meta">UI 设计师 提交了变更 · 等你 review</div>
+            </div>
+            <div class="status review">REVIEW</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-105</div>
+            <div>
+              <div class="title">Dashboard 多巴胺方向探索 (4 mockups)</div>
+              <div class="meta">你 自己起的 · 4 个方向静态页已生成</div>
+            </div>
+            <div class="status active">活跃</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-119</div>
+            <div>
+              <div class="title">rate-limit 配置面板</div>
+              <div class="meta">未指派 · 估时 2 天</div>
+            </div>
+            <div class="status todo">TODO</div>
+          </div>
+        </div>
+
+        <div class="card" style="background:var(--paper)">
+          <h2>ACTIVE AGENTS</h2>
+          <p class="subtitle">谁在干活，谁在摸鱼，一眼看到。</p>
+          <div class="agents">
+            <div class="agent run row1">
+              <div class="av">设</div>
+              <div>
+                <div class="name">UI 设计师 <span class="pulse" style="display:inline-block;vertical-align:middle;margin-left:6px"></span></div>
+                <div class="doing">正在为 MUL-105 生成多巴胺方向草图</div>
+              </div>
+              <div class="progress" data-v="78%"><i style="width:78%"></i></div>
+            </div>
+            <div class="agent run row2">
+              <div class="av">开</div>
+              <div>
+                <div class="name">资深开发</div>
+                <div class="doing">重写 daemon channel 路径 (MUL-128)</div>
+              </div>
+              <div class="progress" data-v="41%"><i style="width:41%"></i></div>
+            </div>
+            <div class="agent idle row3">
+              <div class="av">架</div>
+              <div>
+                <div class="name">系统架构师</div>
+                <div class="doing">空闲 · 上次回复 6 分钟前</div>
+              </div>
+              <div class="progress" data-v="—"><i style="width:0%"></i></div>
+            </div>
+            <div class="agent run row4">
+              <div class="av">测</div>
+              <div>
+                <div class="name">测试工程师</div>
+                <div class="doing">e2e 频道金路径回归</div>
+              </div>
+              <div class="progress" data-v="12%"><i style="width:12%"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="feed">
+        <h2>CHANNEL FEED</h2>
+        <div class="ch alert">
+          <div class="tag"># 全员群</div>
+          <div class="row">
+            <div class="who">Alice · 13:42</div>
+            <div class="body">新版 UI 大家给点 <em>反馈</em> 啦！我倾向方向 1，多巴胺 + 不掩饰，最有辨识度。</div>
+          </div>
+          <div class="unread">3</div>
+        </div>
+        <div class="ch">
+          <div class="tag"># 设计讨论</div>
+          <div class="row">
+            <div class="who">UI 设计师 · 13:38</div>
+            <div class="body">三个核心交互点：(1) hero 标题大一号；(2) 主色锁定霓虹粉；(3) 阴影别去掉。</div>
+          </div>
+          <div class="when">13:38</div>
+        </div>
+        <div class="ch calm">
+          <div class="tag"># ai-experiments</div>
+          <div class="row">
+            <div class="who">系统架构师 · 11:01</div>
+            <div class="body">从架构角度，多巴胺风格下消息密度反而下降；建议在通讯录页保留紧凑列表。</div>
+          </div>
+          <div class="when">11:01</div>
+        </div>
+      </section>
+
+      <section class="cta-row">
+        <div class="cta pink">
+          <div class="plus">+</div>
+          <div><h3>NEW ISSUE</h3><p>把脑子里那个事记下来</p></div>
+        </div>
+        <div class="cta lime">
+          <div class="plus">+</div>
+          <div><h3>NEW CHANNEL</h3><p>开个新群叫上几个智能体</p></div>
+        </div>
+        <div class="cta violet">
+          <div class="plus">+</div>
+          <div><h3>NEW AGENT</h3><p>训一个会说话的人形</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="sticker" onclick="alert('🎉 这是一个静态 mockup，等你定方向再做实功能！')">
+    🚀 SHIP IT <span class="em">·</span> 你今天还差 1 个 PR
+  </div>
+
+  <script>
+    // light interactivity: switch sidebar nav
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · 多巴胺方向探索</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,500;1,500&family=Plus+Jakarta+Sans:wght@800&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter","Space Grotesk",system-ui,sans-serif;color:#15151a;min-height:100vh;
+    background:
+      radial-gradient(1200px 800px at 12% -10%, rgba(255,140,180,.32), transparent 55%),
+      radial-gradient(1000px 700px at 100% 10%, rgba(140,180,255,.32), transparent 55%),
+      radial-gradient(900px 700px at 50% 110%, rgba(255,220,140,.28), transparent 55%),
+      #faf7f2;
+  }
+  .wrap{max-width:1240px;margin:0 auto;padding:64px 32px 96px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;font-size:12px;color:#7a3aff;
+    background:rgba(122,58,255,.10);padding:8px 14px;border-radius:999px;
+  }
+  .eyebrow .pulse{
+    width:8px;height:8px;border-radius:50%;background:#7a3aff;
+    box-shadow:0 0 0 0 rgba(122,58,255,.55);animation:pulse 1.6s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(122,58,255,.55)}
+    70%{box-shadow:0 0 0 14px rgba(122,58,255,0)}
+    100%{box-shadow:0 0 0 0 rgba(122,58,255,0)}
+  }
+  h1{
+    font-family:"Space Grotesk",system-ui,sans-serif;
+    font-size:clamp(40px,6vw,68px);line-height:1.02;letter-spacing:-.02em;
+    margin:18px 0 14px;font-weight:700;
+  }
+  h1 em{font-style:normal;background:linear-gradient(120deg,#ff3d7f,#7a3aff 50%,#2ec4ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{
+    max-width:720px;font-size:18px;line-height:1.55;color:#3b3b46;margin:0 0 16px
+  }
+  .meta-row{
+    display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px;font-size:12.5px;color:#54545e;
+  }
+  .meta-row span{
+    background:rgba(20,20,40,.06);padding:5px 10px;border-radius:999px;font-weight:600;
+  }
+  .group-title{
+    display:flex;align-items:baseline;gap:14px;margin:48px 0 18px;
+  }
+  .group-title h2{
+    font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:22px;margin:0;letter-spacing:-.01em;
+  }
+  .group-title .num{
+    font-family:"Playfair Display",serif;font-weight:700;font-style:italic;font-size:32px;line-height:1;color:#7a3aff;
+  }
+  .group-title .desc{font-size:13px;color:#54545e;margin-left:auto}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  @media (max-width:880px){.grid{grid-template-columns:1fr}}
+  .tile{
+    position:relative;display:block;text-decoration:none;color:inherit;
+    border-radius:24px;overflow:hidden;background:#fff;
+    box-shadow:0 18px 50px -25px rgba(20,20,40,.35);
+    transition:transform .25s ease,box-shadow .25s ease;
+    border:1px solid rgba(20,20,40,.06);
+  }
+  .tile:hover{transform:translateY(-4px);box-shadow:0 30px 60px -25px rgba(20,20,40,.45)}
+  .tile .preview{height:200px;position:relative;overflow:hidden}
+  .tile .body{padding:20px 22px 22px}
+  .tile h3{margin:0 0 6px;font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .tile p{margin:0 0 12px;color:#54545e;font-size:14px;line-height:1.55}
+  .swatch-row{display:flex;gap:5px;margin-top:6px}
+  .sw{width:18px;height:18px;border-radius:6px;border:1px solid rgba(0,0,0,.08)}
+  .tag{
+    display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;margin-right:6px;margin-bottom:8px;
+  }
+  /* tile previews */
+  .pop .preview{
+    background:#FFE552;
+    background-image:linear-gradient(transparent 96%,#000 96%),linear-gradient(90deg,transparent 96%,#000 96%);
+    background-size:32px 32px;
+  }
+  .pop .blockA{position:absolute;left:24px;top:30px;width:120px;height:50px;background:#FF3D7F;border:3px solid #000;
+    box-shadow:6px 6px 0 0 #000;transform:rotate(-3deg);display:flex;align-items:center;justify-content:center;color:#fff;font-family:"Space Grotesk";font-weight:700;letter-spacing:.06em}
+  .pop .blockB{position:absolute;right:30px;top:34px;width:60px;height:60px;background:#B6FF6E;border:3px solid #000;box-shadow:6px 6px 0 0 #000;border-radius:50%}
+  .pop .blockC{position:absolute;left:160px;top:106px;width:160px;height:54px;background:#2EC4FF;border:3px solid #000;box-shadow:6px 6px 0 0 #000;transform:rotate(2deg)}
+  .pop .blockD{position:absolute;right:36px;bottom:24px;width:90px;height:34px;background:#000;color:#FFE552;border:3px solid #000;display:flex;align-items:center;justify-content:center;font-weight:700;letter-spacing:.06em;font-family:"Space Grotesk"}
+
+  .candy .preview{background:linear-gradient(135deg,#FFE3D8,#E8DCFF 50%,#D8F0FF)}
+  .candy .blob1{position:absolute;left:20px;top:24px;width:120px;height:80px;border-radius:30px;background:#FFB088;box-shadow:0 12px 30px -12px rgba(255,176,136,.65);display:flex;align-items:center;justify-content:center;font-size:34px}
+  .candy .blob2{position:absolute;right:30px;top:30px;width:64px;height:64px;border-radius:50%;background:#A8E6CF;box-shadow:0 12px 30px -12px rgba(168,230,207,.7);display:flex;align-items:center;justify-content:center;font-size:26px}
+  .candy .blob3{position:absolute;left:90px;bottom:18px;width:240px;height:54px;border-radius:24px;background:#fff;border:2px solid #FFE066;box-shadow:0 12px 30px -12px rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:600;font-size:14px}
+
+  .frut .preview{
+    background:
+      radial-gradient(900px 600px at 0% 0%,#fff 0%,transparent 60%),
+      radial-gradient(700px 500px at 100% 0%,#C7F081 0%,transparent 55%),
+      linear-gradient(180deg,#9BD4F5 0%,#5BB8E8 100%);
+  }
+  .frut .bubA{position:absolute;left:30px;top:40px;width:90px;height:90px;border-radius:50%;
+    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 30%),
+               linear-gradient(180deg,#7CD9FF,#00B7FF);box-shadow:inset 0 -10px 20px rgba(0,90,160,.4),0 12px 30px -8px rgba(0,183,255,.45)}
+  .frut .bubB{position:absolute;right:30px;top:30px;width:60px;height:60px;border-radius:50%;
+    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 30%),
+               linear-gradient(180deg,#FF8FCB,#FF5FA2);box-shadow:inset 0 -8px 16px rgba(160,30,80,.4),0 10px 24px -6px rgba(255,95,162,.45)}
+  .frut .glassBar{position:absolute;left:90px;bottom:20px;right:30px;height:46px;border-radius:14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.45));
+    border:1px solid rgba(255,255,255,.95);box-shadow:inset 0 1px 0 #fff,0 12px 24px -10px rgba(15,42,74,.30)}
+
+  .glow .preview{
+    background:
+      radial-gradient(220px 160px at 22% 30%, #FF8AB4 0%, transparent 65%),
+      radial-gradient(260px 200px at 80% 60%, #6E8DFF 0%, transparent 65%),
+      radial-gradient(220px 180px at 60% 100%, #B388FF 0%, transparent 65%),
+      linear-gradient(135deg,#0F0524,#21133D);
+  }
+  .glow .glassA{position:absolute;left:24px;top:40px;width:140px;height:60px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.30);backdrop-filter:blur(12px)}
+  .glow .glassB{position:absolute;right:30px;top:60px;width:90px;height:90px;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.30),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.40);backdrop-filter:blur(12px);box-shadow:0 0 60px 8px rgba(255,138,180,.5)}
+  .glow .glassC{position:absolute;left:90px;bottom:24px;width:240px;height:48px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(10px)}
+
+  .holo .preview{
+    background:
+      conic-gradient(from 60deg at 50% 50%,
+        #FF9AE0 0%, #FFD879 14%, #7CFFEB 28%, #BFFFA3 45%, #C8B0FF 65%, #FF9AE0 100%);
+    filter:blur(0px);
+    background-color:#0B0820;
+    background-size:cover;background-position:center;
+    position:relative;
+  }
+  .holo .preview::before{content:"";position:absolute;inset:0;background:rgba(11,8,32,.35);backdrop-filter:blur(40px) saturate(160%)}
+  .holo .holoCard{position:absolute;left:30px;top:30px;width:130px;height:90px;border-radius:18px;background:rgba(20,12,46,.7);border:1.5px solid rgba(255,255,255,.4);backdrop-filter:blur(20px);box-shadow:0 0 40px rgba(255,154,224,.45)}
+  .holo .holoOrb{position:absolute;right:36px;top:36px;width:78px;height:78px;border-radius:50%;background:conic-gradient(from 200deg,#FF9AE0,#FFD879,#7CFFEB,#C8B0FF,#FF9AE0);box-shadow:0 0 40px rgba(255,154,224,.6),inset 0 0 18px rgba(255,255,255,.45)}
+  .holo .holoBar{position:absolute;left:30px;bottom:24px;right:30px;height:36px;border-radius:12px;background:linear-gradient(120deg,#FF9AE0,#FFD879,#7CFFEB,#C8B0FF,#FF9AE0);background-size:200% 100%;animation:foilA 4s linear infinite}
+  @keyframes foilA{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+
+  .cyber .preview{
+    background:#070710;
+    background-image:linear-gradient(rgba(0,240,255,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.10) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+  .cyber .glow1{position:absolute;left:24px;top:32px;width:170px;height:48px;border:1px solid #00F0FF;background:rgba(0,240,255,.08);box-shadow:0 0 24px rgba(0,240,255,.6) inset, 0 0 20px rgba(0,240,255,.4);color:#7CF6FF;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:13px;font-weight:700;display:flex;align-items:center;padding:0 14px;letter-spacing:.05em}
+  .cyber .glow2{position:absolute;right:24px;top:38px;width:78px;height:78px;border:1px solid #FF00E5;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(255,0,229,.4), rgba(255,0,229,0) 60%);box-shadow:0 0 30px rgba(255,0,229,.5)}
+  .cyber .glow3{position:absolute;left:24px;bottom:24px;right:24px;height:38px;border:1px solid rgba(0,240,255,.6);background:rgba(0,240,255,.05);color:#9DF8FF;font-family:"JetBrains Mono",ui-monospace,monospace;font-size:12px;display:flex;align-items:center;padding:0 12px;letter-spacing:.06em}
+
+  .riso .preview{
+    background:#F4EBD3;
+    background-image:radial-gradient(circle at 1px 1px,rgba(26,20,10,.18) 1px,transparent 0);
+    background-size:6px 6px;
+  }
+  .riso .head{position:absolute;left:24px;top:20px;color:#FF5037;font-family:"Playfair Display",serif;font-style:italic;font-weight:900;font-size:60px;line-height:.85;text-shadow:2px 0 #3247B5,-2px 0 transparent}
+  .riso .body{position:absolute;left:24px;top:96px;font-family:"Space Grotesk";font-size:13px;color:#1A140A;font-weight:600;letter-spacing:.04em;line-height:1.5}
+  .riso .body small{font-family:"JetBrains Mono",monospace;font-size:10px;color:#3247B5;letter-spacing:.16em;text-transform:uppercase}
+  .riso .ht{position:absolute;right:30px;bottom:24px;width:90px;height:90px;border-radius:50%;color:#3247B5;background-image:radial-gradient(circle at center,currentColor 1.5px,transparent 1.5px);background-size:8px 8px;opacity:.55}
+
+  .pmod .preview{
+    background:#F4EFE6;
+  }
+  .pmod .ghost{position:absolute;left:8px;top:-30px;font-family:"Playfair Display",serif;font-style:italic;font-weight:900;font-size:200px;line-height:1;color:transparent;-webkit-text-stroke:2px rgba(21,17,13,.15);user-select:none}
+  .pmod .text{position:absolute;left:24px;bottom:18px;color:#15110D;font-family:"Playfair Display",serif;font-weight:900;font-size:38px;line-height:.95;letter-spacing:-.02em}
+  .pmod .text em{color:#E5371D;font-style:italic;font-weight:700}
+  .pmod .strike{text-decoration:line-through;text-decoration-color:#E5371D;text-decoration-thickness:4px}
+  .pmod .meta{position:absolute;right:24px;top:20px;font-family:"JetBrains Mono",monospace;font-size:10px;color:#15110D;letter-spacing:.18em;border:1.5px solid #15110D;padding:3px 8px;transform:rotate(8deg)}
+
+  /* anthropic preview */
+  .anth .preview{
+    background:#F5F0E5;
+    background-image:
+      radial-gradient(2px 1px at 20% 30%,rgba(25,25,25,.06),transparent 70%),
+      radial-gradient(1px 2px at 80% 80%,rgba(25,25,25,.05),transparent 70%);
+    background-size:240px 200px,180px 220px;
+  }
+  .anth .star{position:absolute;left:24px;top:22px;color:#CC785C;font-size:36px;font-style:normal}
+  .anth .h{position:absolute;left:24px;bottom:22px;font-family:"Source Serif 4","Playfair Display",serif;font-weight:500;font-size:36px;line-height:1.05;color:#191919;letter-spacing:-.01em}
+  .anth .h em{font-style:italic;color:#CC785C}
+  .anth .r{position:absolute;right:30px;top:34px;width:130px;height:62px;border-left:1px solid rgba(25,25,25,.18);padding-left:14px;font-family:Inter,sans-serif;font-size:12px;color:#3D3A33;line-height:1.55}
+  .anth .r b{font-weight:700;color:#191919}
+  .anth .stamp{position:absolute;right:30px;bottom:24px;font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.16em;color:#7A7264}
+
+  /* youware preview */
+  .ywv .preview{
+    background:radial-gradient(900px 600px at 80% -20%,rgba(168,85,247,.45),transparent 60%),
+               radial-gradient(700px 500px at -20% 100%,rgba(255,122,26,.35),transparent 60%),
+               #0A0A0F;
+    color:#fff;
+  }
+  .ywv .blobA{position:absolute;left:24px;top:24px;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);padding:5px 11px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.04em}
+  .ywv .blobA::before{content:"";width:7px;height:7px;border-radius:50%;background:#B5F94D;box-shadow:0 0 8px #B5F94D}
+  .ywv .h{position:absolute;left:24px;top:54px;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:26px;line-height:1.05;color:#fff;letter-spacing:-.02em}
+  .ywv .h .grad{background:linear-gradient(120deg,#FF7A1A,#FF4D8D 60%,#A855F7);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ywv .bento{position:absolute;left:24px;bottom:18px;right:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;height:46px}
+  .ywv .bento i{display:block;border-radius:9px}
+  .ywv .bento i:nth-child(1){background:linear-gradient(135deg,#FF7A1A,#FF4D8D)}
+  .ywv .bento i:nth-child(2){background:linear-gradient(135deg,#A855F7,#7C5CFF)}
+  .ywv .bento i:nth-child(3){background:linear-gradient(135deg,#3DD8FF,#7C5CFF)}
+  .ywv .bento i:nth-child(4){background:linear-gradient(135deg,#B5F94D,#3DD8FF)}
+
+  .footer{margin-top:60px;color:#54545e;font-size:13px;line-height:1.7;border-top:1px solid rgba(20,20,40,.10);padding-top:24px}
+  .footer code{background:rgba(20,20,40,.06);padding:2px 8px;border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+  .footer h4{margin:0 0 6px;font-size:14px;font-weight:700;color:#15151a;font-family:"Space Grotesk"}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="eyebrow"><span class="pulse"></span>Folio · Design Exploration · 2026.05</span>
+    <h1>更 <em>AI</em>，更 <em>年轻</em>，更 <em>多巴胺</em>。</h1>
+    <p class="lede">
+      10 个差异化方向，覆盖 <b>大众多巴胺</b>、<b>实验性表达</b> 和 <b>致敬已有品牌</b>。每个方向都用同一份示例数据渲染同一个工作区 dashboard——颜色、形状、密度、情绪的差异一目了然。点进去逐个感受。
+    </p>
+    <div class="meta-row">
+      <span>统一布局：sidebar + dashboard</span>
+      <span>统一数据：林一 · 12 issues · 4/6 agents</span>
+      <span>每个方向独立 HTML，可拷贝即用</span>
+    </div>
+
+    <div class="group-title">
+      <span class="num">01</span>
+      <h2>主流多巴胺 / Crowd-pleasers</h2>
+      <span class="desc">第一眼就能立住的方向，转化率最高的几种气质</span>
+    </div>
+    <div class="grid">
+      <a class="tile pop" href="./pop-brutalism.html">
+        <div class="preview">
+          <div class="blockA">DASHBOARD</div>
+          <div class="blockB"></div>
+          <div class="blockC"></div>
+          <div class="blockD">SHIP IT</div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#FFE552;border:1px solid #000;color:#000">大胆</span>
+          <span class="tag" style="background:#FF3D7F;color:#fff">高对比</span>
+          <h3>1 · Pop Brutalism</h3>
+          <p>厚黑边、硬阴影、糖果色块；像贴纸和广告板。年轻、表达欲强、不掩饰。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#FFE552"></div>
+            <div class="sw" style="background:#FF3D7F"></div>
+            <div class="sw" style="background:#B6FF6E"></div>
+            <div class="sw" style="background:#2EC4FF"></div>
+            <div class="sw" style="background:#000"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile candy" href="./candy-soft.html">
+        <div class="preview">
+          <div class="blob1">🍑</div>
+          <div class="blob2">🌿</div>
+          <div class="blob3">✨ 你今天还有 3 个任务</div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#FFE3D8;color:#B45A2A">温暖</span>
+          <span class="tag" style="background:#E5D9FF;color:#5C3FCF">可爱</span>
+          <h3>2 · Candy Soft</h3>
+          <p>奶油、桃子、薰衣草柔色 + 超大圆角 + emoji 装饰。像把 Discord 和 Duolingo 调和起来。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#FFB088"></div>
+            <div class="sw" style="background:#A8E6CF"></div>
+            <div class="sw" style="background:#C7B6FF"></div>
+            <div class="sw" style="background:#FFE066"></div>
+            <div class="sw" style="background:#FF9CB1"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile frut" href="./frutiger-aero.html">
+        <div class="preview">
+          <div class="bubA"></div>
+          <div class="bubB"></div>
+          <div class="glassBar"></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#A8DCFF;color:#0F2A4A">怀旧</span>
+          <span class="tag" style="background:#C7F081;color:#3D7A14">清透</span>
+          <h3>3 · Frutiger Aero</h3>
+          <p>天空蓝渐变 + 玻璃气泡 + 镜面高光，2003-2008 的乐观主义；iOS 6 / Vista Aero 的 AI 版本。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#A8DCFF"></div>
+            <div class="sw" style="background:#00B7FF"></div>
+            <div class="sw" style="background:#9BE34D"></div>
+            <div class="sw" style="background:#FF8FCB"></div>
+            <div class="sw" style="background:#FFD256"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile glow" href="./glow-gradient.html">
+        <div class="preview">
+          <div class="glassA"></div>
+          <div class="glassB"></div>
+          <div class="glassC"></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:rgba(122,58,255,.12);color:#7a3aff">高级</span>
+          <span class="tag" style="background:rgba(46,196,255,.12);color:#137bb5">未来感</span>
+          <h3>4 · Glow Gradient</h3>
+          <p>毛玻璃 + 彩色光晕 + 大圆角。轻盈、电影感，AI 在生成内容时像是在发光。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#0F0524"></div>
+            <div class="sw" style="background:#7a3aff"></div>
+            <div class="sw" style="background:#FF8AB4"></div>
+            <div class="sw" style="background:#6E8DFF"></div>
+            <div class="sw" style="background:#B388FF"></div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="group-title">
+      <span class="num">02</span>
+      <h2>实验性 / Experimental</h2>
+      <span class="desc">辨识度爆表的方向，更挑产品语境</span>
+    </div>
+    <div class="grid">
+      <a class="tile holo" href="./holo-foil.html">
+        <div class="preview">
+          <div class="holoCard"></div>
+          <div class="holoOrb"></div>
+          <div class="holoBar"></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:linear-gradient(120deg,#FF9AE0,#7CFFEB);color:#0B0820">魔法</span>
+          <span class="tag" style="background:#0B0820;color:#FF9AE0">梦幻</span>
+          <h3>5 · Holographic Foil</h3>
+          <p>油彩虹 + 锥形渐变 + 珠光质感 + 动态箔字。把 AI 当魔法卡牌，会动会发光。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#0B0820"></div>
+            <div class="sw" style="background:#FF9AE0"></div>
+            <div class="sw" style="background:#FFD879"></div>
+            <div class="sw" style="background:#7CFFEB"></div>
+            <div class="sw" style="background:#C8B0FF"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile cyber" href="./cyber-neon.html">
+        <div class="preview">
+          <div class="glow1">> ai_thinking_</div>
+          <div class="glow2"></div>
+          <div class="glow3">folio // dashboard.live</div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#0a0a14;color:#00F0FF;border:1px solid #00F0FF">技术</span>
+          <span class="tag" style="background:#0a0a14;color:#FF00E5;border:1px solid #FF00E5">前卫</span>
+          <h3>6 · Cyber Neon</h3>
+          <p>纯黑底 + 霓虹点缀 + 网格 + 等宽字体。像在 IDE 里、又像在科幻片里，工程师友好。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#050510"></div>
+            <div class="sw" style="background:#00F0FF"></div>
+            <div class="sw" style="background:#FF00E5"></div>
+            <div class="sw" style="background:#B6FF00"></div>
+            <div class="sw" style="background:#B388FF"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile riso" href="./riso-print.html">
+        <div class="preview">
+          <div class="head">Daily.</div>
+          <div class="body"><small>VOL.04 · ISSUE 12</small><br/>By the numbers — your dashboard, in print.</div>
+          <div class="ht"></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#FF5037;color:#F4EBD3">复古</span>
+          <span class="tag" style="background:#3247B5;color:#F4EBD3">印刷感</span>
+          <h3>7 · Risograph Print</h3>
+          <p>米色纸 + 双色油墨 + 半色调 + 杂志栏目。文艺、有质感，像每天给你印一份 daily。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#F4EBD3"></div>
+            <div class="sw" style="background:#FF5037"></div>
+            <div class="sw" style="background:#3247B5"></div>
+            <div class="sw" style="background:#E0A03A"></div>
+            <div class="sw" style="background:#1A140A"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile pmod" href="./post-modern.html">
+        <div class="preview">
+          <div class="ghost">M.</div>
+          <div class="meta">VOL · 04</div>
+          <div class="text">今天的<br/><span class="strike">普通</span> <em>不普通。</em></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#15110D;color:#F4EFE6">破格</span>
+          <span class="tag" style="background:#E5371D;color:#fff">编辑感</span>
+          <h3>8 · Post-Modern Editorial</h3>
+          <p>超大 serif + 不对称网格 + 故意"破"格 + 字体冲撞。像 90s Wired，编辑的自信。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#F4EFE6"></div>
+            <div class="sw" style="background:#15110D"></div>
+            <div class="sw" style="background:#E5371D"></div>
+            <div class="sw" style="background:#C99A2E"></div>
+            <div class="sw" style="background:#2B4F77"></div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="group-title">
+      <span class="num">03</span>
+      <h2>致敬 / Inspired by</h2>
+      <span class="desc">参考已成型的品牌视觉，做 Folio 自己的版本</span>
+    </div>
+    <div class="grid">
+      <a class="tile anth" href="./anthropic-cream.html">
+        <div class="preview">
+          <div class="star">✻</div>
+          <div class="r"><b>Today's brief</b><br/>UI 设计师 78%<br/>资深开发 在重构</div>
+          <div class="stamp">folio.daily / 2026.05.08</div>
+          <div class="h">嗨 林一，<br/>今天有 <em>三件事</em></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:#F5F0E5;color:#191919;border:1px solid rgba(25,25,25,.15)">米黄</span>
+          <span class="tag" style="background:#CC785C;color:#fff">焦糖橙</span>
+          <h3>9 · Anthropic-style</h3>
+          <p>米黄底 + Source Serif headline + 焦糖橙点缀 + ✻ 星标。慢、考究、像在读一封手写信。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#F5F0E5"></div>
+            <div class="sw" style="background:#191919"></div>
+            <div class="sw" style="background:#CC785C"></div>
+            <div class="sw" style="background:#7E8F62"></div>
+            <div class="sw" style="background:#C99C46"></div>
+          </div>
+        </div>
+      </a>
+
+      <a class="tile ywv" href="./youware-vibe.html">
+        <div class="preview">
+          <div class="blobA">vibe coding · live</div>
+          <div class="h">你的 dashboard<br/><span class="grad">在 vibe 中</span>。</div>
+          <div class="bento"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="body">
+          <span class="tag" style="background:linear-gradient(120deg,#FF7A1A,#FF4D8D);color:#fff">vibe coding</span>
+          <span class="tag" style="background:#0A0A0F;color:#A855F7;border:1px solid #A855F7">社区</span>
+          <h3>10 · Youware-style</h3>
+          <p>深紫黑底 + 紫粉渐变 + 焦橙 CTA + bento 卡片墙。"按一下 boost 换一个 vibe" 的社区共创感。</p>
+          <div class="swatch-row">
+            <div class="sw" style="background:#0A0A0F"></div>
+            <div class="sw" style="background:#FF7A1A"></div>
+            <div class="sw" style="background:#FF4D8D"></div>
+            <div class="sw" style="background:#A855F7"></div>
+            <div class="sw" style="background:#B5F94D"></div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div class="footer">
+      <h4>怎么打开</h4>
+      <p>直接在浏览器双击任意 <code>.html</code> 文件即可，无需启动服务。</p>
+      <p>需要的话也可以在 <code>design-mockups/</code> 跑 <code>python3 -m http.server 4321</code>，然后访问 <code>http://localhost:4321</code>。</p>
+      <p style="margin-top:12px">下一步可以挑 1-2 个继续深化（Issue 详情 / 频道页 / Agent 设置），或者把选定方向直接转成项目的 design tokens（CSS variables + Tailwind config）。</p>
+    </div>
+  </div>
+</body>
+</html>

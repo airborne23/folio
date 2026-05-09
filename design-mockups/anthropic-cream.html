@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Anthropic-style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400;1,8..60,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F5F0E5; --paper-2:#EFE8D7; --card:#FAF6EC;
+    --ink:#191919; --ink-2:#3D3A33; --ink-3:#7A7264;
+    --coral:#CC785C; --coral-2:#E0997C; --rust:#B8593F;
+    --olive:#7E8F62; --slate:#5C6678; --gold:#C99C46;
+    --line:rgba(25,25,25,.10); --line-2:rgba(25,25,25,.18);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter",system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;mix-blend-mode:multiply;
+    background:
+      radial-gradient(2px 1px at 22% 30%,rgba(25,25,25,.06),transparent 70%),
+      radial-gradient(1px 2px at 80% 80%,rgba(25,25,25,.05),transparent 70%),
+      radial-gradient(1.5px 1.5px at 50% 60%,rgba(204,120,92,.05),transparent 70%);
+    background-size:240px 200px,180px 220px,260px 240px;
+  }
+  .serif{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;letter-spacing:-.005em}
+  .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+  /* signature asterisk-flower */
+  .star{display:inline-block;color:var(--coral);font-style:normal;font-weight:400;line-height:1}
+  .star::before{content:"✻"}
+  /* hand-drawn underline (svg-y squiggle as gradient) */
+  .squiggle{
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='8' viewBox='0 0 100 8'%3E%3Cpath d='M0 5 C 12 1, 25 9, 38 5 S 60 1, 75 5 S 92 9, 100 5' stroke='%23CC785C' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+    background-repeat:repeat-x;background-position:0 100%;background-size:100px 8px;
+    padding-bottom:6px;
+  }
+  /* shell */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:280px 1fr;min-height:100vh;max-width:1320px;margin:0 auto}
+  /* sidebar */
+  .side{
+    padding:30px 22px 30px 30px;border-right:1px solid var(--line);background:transparent;
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;gap:18px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;font-family:"Source Serif 4",serif;font-weight:600;
+    font-size:24px;letter-spacing:-.01em;color:var(--ink);
+  }
+  .brand .star{font-size:24px;color:var(--coral);line-height:1}
+  .ws{
+    margin-top:8px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;
+  }
+  .ws .av{
+    width:40px;height:40px;border-radius:50%;background:var(--coral);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-family:"Source Serif 4";font-weight:600;font-size:16px;
+    font-style:italic;
+  }
+  .ws .name{font-weight:600;font-size:14.5px;line-height:1.15}
+  .ws .meta{font-size:12px;color:var(--ink-3);font-style:italic;font-family:"Source Serif 4"}
+  .nav-section-title{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
+    margin:14px 4px 4px;display:flex;align-items:center;gap:8px;
+  }
+  .nav-section-title .star{font-size:9px}
+  .nav{display:flex;flex-direction:column;gap:1px}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:14px;padding:10px 12px;border-radius:8px;
+    font-weight:500;font-size:14px;color:var(--ink-2);transition:background .15s ease, color .15s ease;
+  }
+  .nav button .icon{
+    width:22px;text-align:center;font-family:"Source Serif 4";font-style:italic;font-weight:600;color:var(--coral);
+  }
+  .nav button:hover{background:var(--paper-2);color:var(--ink)}
+  .nav button.active{
+    background:var(--ink);color:var(--paper);
+  }
+  .nav button.active .icon{color:var(--coral-2)}
+  .nav .badge{
+    margin-left:auto;font-family:"JetBrains Mono";font-size:11px;color:var(--ink-3);font-weight:400;
+    border:1px solid var(--line-2);padding:1px 7px;border-radius:3px;
+  }
+  .nav button.active .badge{color:var(--paper);border-color:rgba(255,255,255,.2)}
+  .ess{
+    margin-top:auto;padding:14px 0;border-top:1px solid var(--line);font-family:"Source Serif 4",serif;
+    font-style:italic;font-size:14px;line-height:1.55;color:var(--ink-2);
+  }
+  .ess .by{display:block;font-style:normal;font-family:"Inter",sans-serif;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-3);margin-top:8px;font-weight:600}
+  /* main */
+  .main{padding:32px 40px 60px;max-width:1180px;width:100%;}
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:26px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .topbar .crumbs{font-size:12px;color:var(--ink-3);letter-spacing:.06em}
+  .topbar .crumbs b{color:var(--ink);font-weight:600}
+  .topbar .vol{margin-left:auto;font-family:"Source Serif 4";font-style:italic;font-size:13px;color:var(--ink-3)}
+  .topbar .iconbtn{
+    width:34px;height:34px;border:1px solid var(--line-2);border-radius:50%;background:transparent;color:var(--ink);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .topbar .iconbtn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+  /* hero */
+  .hero{
+    padding:50px 0 40px;border-bottom:1px solid var(--line);margin-bottom:36px;
+    display:grid;grid-template-columns:1fr 280px;gap:48px;align-items:end;
+  }
+  .hero .kicker{
+    font-family:"Inter";font-weight:600;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--coral);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+  }
+  .hero .kicker .star{font-size:14px}
+  .hero h1{
+    font-family:"Source Serif 4",serif;font-weight:500;font-size:64px;line-height:1.05;
+    letter-spacing:-.022em;margin:0;color:var(--ink);
+  }
+  .hero h1 em{font-style:italic;color:var(--coral);font-weight:500}
+  .hero .lede{
+    font-family:"Source Serif 4",serif;font-style:italic;font-size:19px;line-height:1.55;
+    color:var(--ink-2);max-width:580px;margin:18px 0 0;
+  }
+  .hero aside{
+    border-left:1px solid var(--line-2);padding:6px 0 6px 22px;
+    font-family:"Inter",sans-serif;font-size:13px;line-height:1.65;color:var(--ink-2);
+  }
+  .hero aside h4{
+    font-family:"Inter";font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;
+    margin:0 0 8px;color:var(--ink);
+  }
+  .hero aside ul{list-style:none;padding:0;margin:0}
+  .hero aside li{padding:5px 0;border-bottom:1px dashed var(--line);display:flex;align-items:start;gap:8px}
+  .hero aside li:last-child{border-bottom:none}
+  .hero aside li .star{font-size:11px;margin-top:3px;flex-shrink:0}
+  .hero aside li b{font-weight:600;color:var(--ink)}
+
+  /* numbered section */
+  .section{
+    display:flex;align-items:baseline;gap:14px;margin:40px 0 16px;padding-bottom:6px;
+    border-bottom:1px solid var(--line);
+  }
+  .section .star{font-size:18px}
+  .section h2{
+    font-family:"Source Serif 4";font-weight:500;font-size:30px;line-height:1.1;letter-spacing:-.015em;margin:0;
+  }
+  .section h2 em{font-style:italic;color:var(--coral)}
+  .section .meta{
+    margin-left:auto;font-family:"Inter";font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-3);font-weight:600;
+  }
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:30px}
+  .stat{
+    padding:24px 26px 24px 0;border-right:1px solid var(--line);position:relative;
+  }
+  .stat:first-child{padding-left:0}
+  .stat:not(:first-child){padding-left:26px}
+  .stat:last-child{border-right:none}
+  .stat .label{
+    font-family:"Inter";font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:600;
+    display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  }
+  .stat .label .star{font-size:11px}
+  .stat .num{
+    font-family:"Source Serif 4";font-weight:500;font-size:64px;line-height:.98;color:var(--ink);
+    letter-spacing:-.025em;
+  }
+  .stat .num em{font-style:italic;font-weight:400}
+  .stat.coral .num{color:var(--coral)}
+  .stat.olive .num{color:var(--olive)}
+  .stat .meta{font-family:"Source Serif 4";font-style:italic;font-size:14.5px;line-height:1.45;color:var(--ink-2);margin-top:6px;max-width:230px}
+  .stat .meta b{font-style:normal;color:var(--ink);font-weight:500}
+
+  /* tasks — quiet list */
+  .tasks{display:flex;flex-direction:column;gap:0}
+  .task{
+    display:grid;grid-template-columns:80px 1fr 110px;gap:20px;align-items:baseline;padding:18px 4px;
+    border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .task:last-child{border-bottom:none}
+  .task:hover{background:var(--paper-2)}
+  .task .id{
+    font-family:"JetBrains Mono";font-size:12px;letter-spacing:.04em;color:var(--ink-3);
+    text-align:right;
+  }
+  .task .title{
+    font-family:"Source Serif 4";font-weight:500;font-size:21px;line-height:1.25;letter-spacing:-.01em;color:var(--ink);
+  }
+  .task .title em{font-style:italic;color:var(--coral);font-weight:500}
+  .task .meta{font-family:"Source Serif 4";font-style:italic;font-size:13.5px;color:var(--ink-2);margin-top:4px}
+  .task .status{
+    font-family:"Inter";font-size:11px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;
+    align-self:start;justify-self:end;display:inline-flex;align-items:center;gap:6px;
+  }
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+  .status.todo .dot{background:transparent;border:1.5px solid var(--ink-3)}
+  .status.todo{color:var(--ink-3)}
+  .status.doing .dot{background:var(--coral)}
+  .status.doing{color:var(--coral)}
+  .status.review .dot{background:var(--gold)}
+  .status.review{color:var(--gold)}
+  .status.active .dot{background:var(--olive)}
+  .status.active{color:var(--olive)}
+
+  /* agents */
+  .agents{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+  .agent{
+    padding:22px 22px 22px 0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    display:grid;grid-template-columns:auto 1fr;gap:16px;
+  }
+  .agent:nth-child(2n){border-right:none;padding-left:22px;padding-right:0}
+  .agent:nth-child(odd){padding-left:0}
+  .agent:nth-last-child(-n+2){border-bottom:none}
+  .agent .av{
+    width:54px;height:54px;border-radius:50%;background:var(--coral);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Source Serif 4";font-weight:500;font-style:italic;font-size:24px;
+  }
+  .agent.row2 .av{background:var(--olive)}
+  .agent.row3 .av{background:var(--paper-2);color:var(--ink-3)}
+  .agent.row4 .av{background:var(--slate);color:var(--paper)}
+  .agent .name{
+    font-family:"Source Serif 4";font-weight:600;font-size:19px;letter-spacing:-.01em;line-height:1.1;
+    display:flex;align-items:center;gap:10px;
+  }
+  .agent .doing{font-family:"Source Serif 4";font-style:italic;font-size:14.5px;line-height:1.45;color:var(--ink-2);margin-top:6px}
+  .agent .progress{
+    margin-top:12px;display:flex;align-items:center;gap:12px;font-family:"JetBrains Mono";font-size:11.5px;color:var(--ink-3);
+  }
+  .agent .progress .bar{flex:1;max-width:160px;height:2px;background:rgba(25,25,25,.15)}
+  .agent .progress .bar i{display:block;height:100%;background:var(--coral)}
+  .agent.row2 .progress .bar i{background:var(--olive)}
+  .agent.row4 .progress .bar i{background:var(--slate)}
+  .pulse{
+    width:8px;height:8px;border-radius:50%;background:var(--coral);
+    box-shadow:0 0 0 0 rgba(204,120,92,.7);animation:beat 1.6s ease-out infinite;display:inline-block;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(204,120,92,.7)}
+    70%{box-shadow:0 0 0 10px rgba(204,120,92,0)}
+    100%{box-shadow:0 0 0 0 rgba(204,120,92,0)}
+  }
+
+  /* feed — magazine columns */
+  .feed{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:30px}
+  .ch{
+    padding:22px 22px 22px 0;border-right:1px solid var(--line);position:relative;cursor:pointer;
+  }
+  .ch:nth-child(3n){border-right:none}
+  .ch:not(:nth-child(-n+3)){border-top:1px solid var(--line);margin-top:0;padding-top:22px}
+  .ch:not(:first-child):not(:nth-child(3n+1)){padding-left:22px}
+  .ch:hover{background:var(--paper-2)}
+  .ch .tag{
+    font-family:"Inter";font-size:11px;letter-spacing:.16em;color:var(--coral);font-weight:700;text-transform:uppercase;
+    display:flex;align-items:center;gap:6px;
+  }
+  .ch.calm .tag{color:var(--olive)}
+  .ch.calm2 .tag{color:var(--slate)}
+  .ch .tag .star{font-size:11px}
+  .ch .who{
+    font-family:"Source Serif 4";font-weight:500;font-size:22px;line-height:1.15;letter-spacing:-.01em;color:var(--ink);
+    margin:8px 0 4px;
+  }
+  .ch .body{font-family:"Source Serif 4";font-size:15px;line-height:1.6;color:var(--ink-2)}
+  .ch .body em{
+    background:linear-gradient(120deg,transparent 0,transparent 30%,rgba(204,120,92,.30) 30%,rgba(204,120,92,.30) 70%,transparent 70%);
+    color:var(--ink);font-style:normal;font-weight:600;
+  }
+  .ch .when{
+    margin-top:14px;font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.10em;color:var(--ink-3);
+  }
+  .ch.alert::after{
+    content:attr(data-unread);position:absolute;right:14px;top:14px;background:var(--coral);color:var(--paper);
+    width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-family:"Inter";font-size:11px;font-weight:700;
+  }
+
+  /* cta — quiet links */
+  .ctas{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:36px;border-top:1px solid var(--line);
+  }
+  .cta{
+    padding:24px 22px 24px 0;border-right:1px solid var(--line);cursor:pointer;position:relative;
+  }
+  .cta:not(:first-child){padding-left:22px}
+  .cta:last-child{border-right:none}
+  .cta:hover{background:var(--paper-2)}
+  .cta .small{
+    font-family:"Inter";font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+    display:flex;align-items:center;gap:6px;
+  }
+  .cta .small .star{font-size:11px;color:var(--coral)}
+  .cta h3{
+    font-family:"Source Serif 4";font-weight:500;font-size:26px;letter-spacing:-.015em;margin:8px 0 6px;
+  }
+  .cta h3 em{font-style:italic;color:var(--coral)}
+  .cta p{
+    font-family:"Source Serif 4";font-style:italic;font-size:14.5px;line-height:1.5;color:var(--ink-2);margin:0 0 12px;max-width:280px;
+  }
+  .cta .arr{
+    font-family:"Inter";font-size:13px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:6px;
+  }
+  .cta .arr::after{content:"→";color:var(--coral)}
+  .cta:hover .arr::after{transform:translateX(2px);transition:transform .2s}
+
+  .footer{
+    margin-top:50px;padding-top:18px;border-top:1px solid var(--line);
+    font-family:"Source Serif 4";font-style:italic;font-size:13px;color:var(--ink-3);
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+  }
+  .footer .star{font-size:13px;color:var(--coral)}
+
+  /* back */
+  .back{
+    position:fixed;left:18px;top:14px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    border:1px solid var(--ink);background:var(--paper);padding:5px 12px;text-decoration:none;color:var(--ink);
+    font-family:"Inter";font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;border-radius:0;
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← Index</a>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="star"></span>folio</div>
+      <div class="ws">
+        <div class="av">M</div>
+        <div>
+          <div class="name">Folio · 设计组</div>
+          <div class="meta">15 人 · 6 智能体</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title"><span class="star"></span>Workflow</div>
+      <div class="nav">
+        <button class="active"><span class="icon">i.</span>Dashboard</button>
+        <button><span class="icon">ii.</span>Issues<span class="badge">12</span></button>
+        <button><span class="icon">iii.</span>Channels<span class="badge">3</span></button>
+        <button><span class="icon">iv.</span>Skills</button>
+      </div>
+
+      <div class="nav-section-title"><span class="star"></span>Intelligence</div>
+      <div class="nav">
+        <button><span class="icon">v.</span>Agents<span class="badge">6</span></button>
+        <button><span class="icon">vi.</span>Autopilots</button>
+      </div>
+
+      <div class="ess">
+        “We design like a thoughtful colleague would, not like a flashy salesperson. The system is patient. It explains itself.”
+        <span class="by">— internal design notes</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="crumbs">FRI · MAY 8 · 2026 · <b>Daily review</b></div>
+        <button class="iconbtn">⌕</button>
+        <button class="iconbtn">⛭</button>
+        <div class="vol">林一's workspace</div>
+      </div>
+
+      <section class="hero">
+        <div>
+          <div class="kicker"><span class="star"></span>Today's brief</div>
+          <h1 class="serif">嗨 林一，<br/>今天有 <em>三件事</em><br/>值得放在心上。</h1>
+          <p class="lede">UI 设计师正在为多巴胺方向画第二轮草图。资深开发刚 ship 了 reasoning 过滤——你可以放心地让它继续接下来的 PR。频道里 Alice 在等你回复。</p>
+        </div>
+        <aside>
+          <h4>What's worth your attention</h4>
+          <ul>
+            <li><span class="star"></span><div><b>2 issues</b> 等你 review，其中 1 个会卡住 release</div></li>
+            <li><span class="star"></span><div><b>UI 设计师</b> 已完成 78% 的草图，估计还需 6 分钟</div></li>
+            <li><span class="star"></span><div><b>#全员群</b> 有 3 条新消息，最近一条 13:42</div></li>
+            <li><span class="star"></span><div><b>测试工程师</b> 在跑 e2e 金路径，目前一切顺利</div></li>
+          </ul>
+        </aside>
+      </section>
+
+      <div class="section">
+        <span class="star"></span>
+        <h2 class="serif">By the <em>numbers</em></h2>
+        <div class="meta">Auto-tracked</div>
+      </div>
+      <section class="stats">
+        <div class="stat coral">
+          <div class="label"><span class="star"></span>Open issues</div>
+          <div class="num">12</div>
+          <div class="meta"><b>+3</b> 这周新建 · 2 待你 review · 1 阻塞 release</div>
+        </div>
+        <div class="stat olive">
+          <div class="label"><span class="star"></span>Agents working</div>
+          <div class="num">4 <em>/</em> 6</div>
+          <div class="meta">UI 78% · 资深开发 41% · 测试工程师 12% · 系统架构师 idle</div>
+        </div>
+        <div class="stat">
+          <div class="label"><span class="star"></span>Unread channels</div>
+          <div class="num">3</div>
+          <div class="meta">由 Alice 主动发起 · last <b>13:42</b></div>
+        </div>
+      </section>
+
+      <div class="section">
+        <span class="star"></span>
+        <h2 class="serif">Your <em>tasks</em></h2>
+        <div class="meta">4 items · sorted by priority</div>
+      </div>
+      <section class="tasks">
+        <div class="task">
+          <div class="id">MUL-128</div>
+          <div>
+            <div class="title">重构频道消息列表的 <em>滚动行为</em></div>
+            <div class="meta">— 资深开发 正在生成 PR · 12 分钟前更新</div>
+          </div>
+          <div class="status doing"><span class="dot"></span>In progress</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-131</div>
+          <div>
+            <div class="title">@-mention picker 过滤策略 + <em>IME guard</em></div>
+            <div class="meta">— UI 设计师 提交了变更，等你 review</div>
+          </div>
+          <div class="status review"><span class="dot"></span>Awaiting review</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-105</div>
+          <div>
+            <div class="title">Dashboard <em>多巴胺方向</em> 探索</div>
+            <div class="meta">— 你 自己起的，10 个方向 mockup 已生成</div>
+          </div>
+          <div class="status active"><span class="dot"></span>Active</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-119</div>
+          <div>
+            <div class="title">rate-limit <em>配置面板</em></div>
+            <div class="meta">— 未指派 · 估时 2 天</div>
+          </div>
+          <div class="status todo"><span class="dot"></span>To do</div>
+        </div>
+      </section>
+
+      <div class="section">
+        <span class="star"></span>
+        <h2 class="serif">Active <em>agents</em></h2>
+        <div class="meta">4 / 6 currently online</div>
+      </div>
+      <section class="agents">
+        <div class="agent row1">
+          <div class="av">U</div>
+          <div>
+            <div class="name">UI 设计师 <span class="pulse"></span></div>
+            <div class="doing">— 为 MUL-105 生成多巴胺方向草图</div>
+            <div class="progress"><span class="bar"><i style="width:78%"></i></span><span>78%</span></div>
+          </div>
+        </div>
+        <div class="agent row2">
+          <div class="av">D</div>
+          <div>
+            <div class="name">资深开发</div>
+            <div class="doing">— 重写 daemon channel 路径 (MUL-128)</div>
+            <div class="progress"><span class="bar"><i style="width:41%"></i></span><span>41%</span></div>
+          </div>
+        </div>
+        <div class="agent row3">
+          <div class="av">A</div>
+          <div>
+            <div class="name">系统架构师</div>
+            <div class="doing">— Idle, 6 分钟没有动作。或许在思考。</div>
+            <div class="progress"><span class="bar"><i style="width:0%"></i></span><span>idle</span></div>
+          </div>
+        </div>
+        <div class="agent row4">
+          <div class="av">Q</div>
+          <div>
+            <div class="name">测试工程师</div>
+            <div class="doing">— Running channels.golden_path.e2e</div>
+            <div class="progress"><span class="bar"><i style="width:12%"></i></span><span>12%</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section">
+        <span class="star"></span>
+        <h2 class="serif">Channel <em>feed</em></h2>
+        <div class="meta">3 unread · last activity 13:42</div>
+      </div>
+      <section class="feed">
+        <div class="ch alert" data-unread="3">
+          <div class="tag"><span class="star"></span># 全员群</div>
+          <div class="who serif">Alice</div>
+          <div class="body">新版 UI 大家给点 <em>反馈</em>！我倾向方向 9，米黄底 + 焦糖橙 + serif，看着像在读一封信。</div>
+          <div class="when">13:42 · 3 NEW</div>
+        </div>
+        <div class="ch calm">
+          <div class="tag"><span class="star"></span># 设计讨论</div>
+          <div class="who serif">UI 设计师</div>
+          <div class="body">三个核心：(1) Source Serif 4 头条；(2) 焦糖橙 #CC785C 主色；(3) ✻ 星标做导引。</div>
+          <div class="when">13:38</div>
+        </div>
+        <div class="ch calm2">
+          <div class="tag"><span class="star"></span># ai-experiments</div>
+          <div class="who serif">系统架构师</div>
+          <div class="body">从架构角度，serif 长内容在中文场景需注意行高。建议放大 line-height 到 1.6。</div>
+          <div class="when">11:01</div>
+        </div>
+      </section>
+
+      <section class="ctas">
+        <div class="cta">
+          <div class="small"><span class="star"></span>i. start something</div>
+          <h3 class="serif">New <em>issue</em></h3>
+          <p>把脑子里那个事记下来。也许它就是下一个 release 里你最得意的部分。</p>
+          <div class="arr">Open the form</div>
+        </div>
+        <div class="cta">
+          <div class="small"><span class="star"></span>ii. gather a room</div>
+          <h3 class="serif">New <em>channel</em></h3>
+          <p>找几个智能体和几个人，开个新群。一句话也能开始。</p>
+          <div class="arr">Spin up a room</div>
+        </div>
+        <div class="cta">
+          <div class="small"><span class="star"></span>iii. teach a model</div>
+          <h3 class="serif">New <em>agent</em></h3>
+          <p>训一个会写代码、会聊天、会偶尔沉默的协作者。</p>
+          <div class="arr">Define one</div>
+        </div>
+      </section>
+
+      <div class="footer">
+        <div><span class="star"></span> Folio · designed with patience · 2026</div>
+        <div>set in Source Serif 4 + Inter</div>
+        <div>↑ top</div>
+      </div>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

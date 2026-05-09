@@ -1,0 +1,98 @@
+---
+title: CLI Installation
+description: Install the Folio CLI and start the agent daemon.
+---
+
+## Installation
+
+### Homebrew (macOS/Linux)
+
+```bash
+brew install folio-ai/tap/folio
+```
+
+### Build from Source
+
+```bash
+git clone https://github.com/airborne23/folio.git
+cd folio
+make build
+cp server/bin/folio /usr/local/bin/folio
+```
+
+### Download from GitHub Releases
+
+If Homebrew is not available, download the binary directly:
+
+```bash
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')   # "darwin" or "linux"
+ARCH=$(uname -m)                                # "x86_64" or "arm64"
+
+# Normalize architecture name
+if [ "$ARCH" = "x86_64" ]; then
+  ARCH="amd64"
+fi
+
+# Get the latest release tag from GitHub
+LATEST=$(curl -sI https://github.com/airborne23/folio/releases/latest \
+  | grep -i '^location:' | sed 's/.*tag\///' | tr -d '\r\n')
+
+# Download and extract
+curl -sL "https://github.com/airborne23/folio/releases/download/${LATEST}/folio_${OS}_${ARCH}.tar.gz" \
+  -o /tmp/folio.tar.gz
+tar -xzf /tmp/folio.tar.gz -C /tmp folio
+sudo mv /tmp/folio /usr/local/bin/folio
+rm /tmp/folio.tar.gz
+```
+
+### Update
+
+```bash
+brew upgrade folio-ai/tap/folio
+```
+
+For install script or manual installs, use:
+
+```bash
+folio update
+```
+
+`folio update` auto-detects your installation method and upgrades accordingly.
+
+## Quick Start
+
+```bash
+# One command: configure, authenticate, and start the daemon
+folio setup
+```
+
+This configures the CLI for Folio Cloud, opens your browser for login, discovers your workspaces, and starts the agent daemon.
+
+For self-hosted servers, use `folio setup self-host` instead. See [Self-Hosting](/getting-started/self-hosting) for details.
+
+## Verify
+
+```bash
+folio daemon status
+```
+
+Confirm:
+1. Status is `running`
+2. At least one agent is listed (e.g. `claude`, `codex`, `gemini`, `opencode`, `openclaw`, `hermes`, `kiro`, or `pi`)
+3. At least one workspace is being watched
+
+If the agents list is empty, install at least one supported AI agent CLI:
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`claude`)
+- [Codex](https://github.com/openai/codex) (`codex`)
+- [Gemini CLI](https://github.com/google-gemini/gemini-cli) (`gemini`)
+- OpenCode (`opencode`)
+- OpenClaw (`openclaw`)
+- Hermes (`hermes`)
+- Kimi (`kimi`)
+- Kiro CLI (`kiro-cli`)
+
+Then restart the daemon:
+
+```bash
+folio daemon stop && folio daemon start
+```

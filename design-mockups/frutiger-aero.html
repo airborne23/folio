@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Frutiger Aero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#0F2A4A; --ink-2:#345E8E; --ink-3:#7B9FCB;
+    --aqua:#00B7FF; --aqua-2:#7CD9FF; --lime:#9BE34D; --lime-2:#C7F081;
+    --pink:#FF8FCB; --gold:#FFD256; --pearl:#F5FAFF;
+    --glass-edge:rgba(255,255,255,.85); --glass-shadow:rgba(15,42,74,.20);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter","Plus Jakarta Sans",system-ui,sans-serif;color:var(--ink);min-height:100vh;
+    background:
+      radial-gradient(900px 600px at 0% 0%, #FFFFFF 0%, transparent 60%),
+      radial-gradient(700px 600px at 100% 0%, #C7F081 0%, transparent 55%),
+      linear-gradient(180deg,#9BD4F5 0%,#5BB8E8 35%,#3A9CD4 100%);
+    background-attachment:fixed;
+  }
+  /* clouds */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(160px 60px at 8% 18%,rgba(255,255,255,.85),rgba(255,255,255,0) 70%),
+      radial-gradient(220px 80px at 78% 14%,rgba(255,255,255,.75),rgba(255,255,255,0) 70%),
+      radial-gradient(180px 70px at 24% 42%,rgba(255,255,255,.55),rgba(255,255,255,0) 70%),
+      radial-gradient(260px 90px at 88% 64%,rgba(255,255,255,.6),rgba(255,255,255,0) 70%),
+      radial-gradient(160px 60px at 12% 88%,rgba(255,255,255,.5),rgba(255,255,255,0) 70%);
+  }
+  /* floating bubbles */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      radial-gradient(circle at 20% 80%,rgba(255,255,255,.25) 0,rgba(255,255,255,0) 8%),
+      radial-gradient(circle at 70% 30%,rgba(255,255,255,.20) 0,rgba(255,255,255,0) 6%),
+      radial-gradient(circle at 80% 90%,rgba(155,227,77,.30) 0,rgba(155,227,77,0) 6%);
+  }
+  /* shell */
+  .app{position:relative;z-index:1;display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+  /* sidebar */
+  .side{
+    margin:18px 0 18px 18px;padding:24px 20px;border-radius:24px;
+    background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,.55));
+    backdrop-filter:blur(28px) saturate(140%);
+    -webkit-backdrop-filter:blur(28px) saturate(140%);
+    border:1px solid var(--glass-edge);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      inset 0 -1px 0 rgba(15,42,74,.15),
+      0 24px 50px -20px rgba(15,42,74,.30);
+    height:calc(100vh - 36px);position:sticky;top:18px;display:flex;flex-direction:column;gap:14px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.01em}
+  .brand .orb{
+    width:36px;height:36px;border-radius:50%;
+    background:
+      radial-gradient(circle at 35% 28%,#FFFFFF 0%,rgba(255,255,255,0) 30%),
+      radial-gradient(circle at 50% 50%,#7CD9FF 0%,#00B7FF 70%);
+    box-shadow:0 8px 24px -4px rgba(0,183,255,.55), inset 0 -6px 12px rgba(15,42,74,.25);
+  }
+  .ws{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;
+    background:linear-gradient(180deg,#FFFFFF 0%,#E9F4FF 100%);
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 #fff, 0 8px 18px -10px rgba(15,42,74,.25);
+  }
+  .ws .av{
+    width:38px;height:38px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 50%),
+      linear-gradient(180deg,#FF8FCB,#FF5FA2);
+    color:#fff;font-weight:800;font-size:16px;
+    box-shadow:inset 0 1px 0 #fff, 0 6px 14px -6px rgba(255,95,162,.55);
+  }
+  .ws .name{font-weight:700;font-size:14px;line-height:1.1}
+  .ws .meta{font-size:11.5px;color:var(--ink-2)}
+  .nav-section-title{
+    font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);font-weight:700;
+    margin:14px 4px 4px;
+  }
+  .nav{display:flex;flex-direction:column;gap:4px}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:14px;
+    font-weight:600;font-size:13.5px;color:var(--ink-2);transition:background .2s ease,color .2s ease;
+    border:1px solid transparent;
+  }
+  .nav button:hover{background:rgba(255,255,255,.65);color:var(--ink);border-color:rgba(255,255,255,.95)}
+  .nav button.active{
+    color:var(--ink);background:linear-gradient(180deg,#FFFFFF 0%,#D9EFFF 100%);
+    border-color:rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 #fff, 0 6px 14px -6px rgba(0,183,255,.45);
+  }
+  .nav button .icon{
+    width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(180deg,#FFFFFF,#D9EFFF);color:var(--ink-2);font-size:13px;
+    box-shadow:inset 0 1px 0 #fff, 0 4px 10px -4px rgba(15,42,74,.25);
+  }
+  .nav button.active .icon{
+    background:linear-gradient(180deg,#7CD9FF,#00B7FF);color:#fff;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 6px 14px -4px rgba(0,183,255,.55);
+  }
+  .nav .badge{
+    margin-left:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;
+    background:linear-gradient(180deg,#fff,#E9F4FF);color:var(--ink-2);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.95), 0 4px 10px -4px rgba(15,42,74,.25);
+  }
+  .promo{
+    margin-top:auto;padding:16px;border-radius:20px;color:var(--ink);
+    background:
+      radial-gradient(circle at 20% 0%,rgba(255,255,255,.9),rgba(255,255,255,0) 60%),
+      linear-gradient(180deg,#C7F081 0%,#9BE34D 100%);
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 #fff, 0 16px 36px -10px rgba(155,227,77,.55);
+    position:relative;overflow:hidden;
+  }
+  .promo h4{margin:0 0 4px;font-size:15px;font-weight:800}
+  .promo p{margin:0;font-size:12.5px;line-height:1.5;color:#3D5C16}
+  .promo button{
+    margin-top:10px;border:0;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;
+    padding:7px 12px;border-radius:999px;color:#1B2C09;
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.6));
+    box-shadow:inset 0 1px 0 #fff, 0 4px 10px -4px rgba(0,0,0,.20);
+  }
+  /* main */
+  .main{padding:18px 24px 60px;max-width:1280px}
+  .topbar{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+  .search{
+    flex:1;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;
+    background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.6));
+    border:1px solid rgba(255,255,255,.95);color:var(--ink-2);font-size:13.5px;font-weight:500;
+    box-shadow:inset 0 1px 0 #fff, 0 14px 30px -16px rgba(15,42,74,.30);
+  }
+  .search .kbd{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:8px;
+    background:linear-gradient(180deg,#FFFFFF,#D9EFFF);color:var(--ink);
+    box-shadow:inset 0 1px 0 #fff, 0 2px 6px -2px rgba(15,42,74,.20);}
+  .iconbtn{
+    width:46px;height:46px;border-radius:50%;border:0;cursor:pointer;font-size:18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(255,255,255,.65));
+    color:var(--ink-2);box-shadow:inset 0 1px 0 #fff, 0 14px 28px -14px rgba(15,42,74,.30);
+  }
+  .iconbtn.user{
+    background:linear-gradient(180deg,#7CD9FF,#00B7FF);color:#fff;font-weight:700;font-size:14px;font-family:inherit;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 14px 28px -10px rgba(0,183,255,.50);
+  }
+  /* hero */
+  .hero{
+    border-radius:28px;padding:32px;margin-bottom:24px;color:var(--ink);
+    background:
+      radial-gradient(700px 320px at 10% 20%,rgba(255,255,255,.95),rgba(255,255,255,0) 60%),
+      radial-gradient(600px 380px at 90% 90%,rgba(124,217,255,.6),rgba(124,217,255,0) 60%),
+      linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,.45) 100%);
+    border:1px solid var(--glass-edge);
+    box-shadow:inset 0 1px 0 #fff, 0 30px 60px -25px rgba(15,42,74,.35);
+    position:relative;overflow:hidden;
+  }
+  .hero h1{
+    font-family:"Plus Jakarta Sans",sans-serif;font-weight:800;font-size:42px;line-height:1.05;
+    margin:0 0 10px;letter-spacing:-.022em;
+  }
+  .hero h1 .liq{
+    background:linear-gradient(180deg,#00B7FF 0%,#007ACC 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.55;max-width:580px;font-weight:500}
+  .hero .bubble{
+    position:absolute;border-radius:50%;
+    background:
+      radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 35%),
+      radial-gradient(circle at 50% 50%,rgba(124,217,255,.5) 0%,rgba(124,217,255,0.05) 70%);
+    box-shadow:inset 0 -10px 20px rgba(0,183,255,.3);
+  }
+  .hero .b1{width:140px;height:140px;right:24px;top:18px}
+  .hero .b2{width:80px;height:80px;right:170px;top:130px;background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 35%),
+    radial-gradient(circle at 50% 50%,rgba(155,227,77,.6) 0%,rgba(155,227,77,0.05) 70%);
+    box-shadow:inset 0 -10px 20px rgba(155,227,77,.3);
+  }
+  .hero .b3{width:54px;height:54px;right:90px;top:30px;background:
+    radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 35%),
+    radial-gradient(circle at 50% 50%,rgba(255,143,203,.6) 0%,rgba(255,143,203,0.05) 70%);
+    box-shadow:inset 0 -8px 16px rgba(255,143,203,.3);
+  }
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px}
+  .stat{
+    border-radius:22px;padding:22px;color:var(--ink);position:relative;overflow:hidden;
+    background:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.55) 100%);
+    border:1px solid var(--glass-edge);
+    box-shadow:inset 0 1px 0 #fff, 0 18px 38px -18px rgba(15,42,74,.30);
+  }
+  .stat .label{font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.16em;text-transform:uppercase}
+  .stat .num{font-family:"Plus Jakarta Sans";font-weight:800;font-size:50px;line-height:1.05;margin:6px 0}
+  .stat .num.aqua{background:linear-gradient(180deg,#00B7FF,#005FA8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .num.lime{background:linear-gradient(180deg,#9BE34D,#3D7A14);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .num.pink{background:linear-gradient(180deg,#FF8FCB,#C44B91);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .meta{font-size:13px;color:var(--ink-2)}
+  .stat .water{
+    position:absolute;right:-30px;bottom:-30px;width:140px;height:140px;border-radius:50%;
+    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.7) 0%,transparent 35%),
+               radial-gradient(circle at 50% 50%,rgba(124,217,255,.45),rgba(124,217,255,0) 65%);
+    box-shadow:inset 0 -10px 24px rgba(0,183,255,.25);
+  }
+  .stat:nth-child(2) .water{
+    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.7) 0%,transparent 35%),
+               radial-gradient(circle at 50% 50%,rgba(155,227,77,.45),rgba(155,227,77,0) 65%);
+    box-shadow:inset 0 -10px 24px rgba(155,227,77,.25);
+  }
+  .stat:nth-child(3) .water{
+    background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.7) 0%,transparent 35%),
+               radial-gradient(circle at 50% 50%,rgba(255,143,203,.45),rgba(255,143,203,0) 65%);
+    box-shadow:inset 0 -10px 24px rgba(255,143,203,.25);
+  }
+  /* row */
+  .row{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:20px}
+  @media (max-width:1080px){.row{grid-template-columns:1fr}}
+  .card{
+    border-radius:24px;padding:22px;color:var(--ink);
+    background:linear-gradient(180deg,rgba(255,255,255,.92) 0%,rgba(255,255,255,.55) 100%);
+    border:1px solid var(--glass-edge);
+    box-shadow:inset 0 1px 0 #fff, 0 18px 38px -18px rgba(15,42,74,.30);
+  }
+  .card h2{font-family:"Plus Jakarta Sans";font-weight:800;font-size:20px;margin:0 0 6px;letter-spacing:-.01em}
+  .card .subtitle{margin:0 0 16px;font-size:13px;color:var(--ink-2)}
+  /* tasks */
+  .task{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 14px;border-radius:16px;
+    background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.55));
+    border:1px solid rgba(255,255,255,.95);margin-bottom:8px;cursor:pointer;
+    box-shadow:inset 0 1px 0 #fff, 0 6px 14px -8px rgba(15,42,74,.25);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .task:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 #fff, 0 16px 30px -10px rgba(0,183,255,.30)}
+  .task .id{font-size:11.5px;font-weight:700;color:var(--ink-2);background:linear-gradient(180deg,#fff,#E9F4FF);
+    padding:5px 10px;border-radius:999px;letter-spacing:.04em;
+    box-shadow:inset 0 1px 0 #fff, 0 2px 4px -2px rgba(15,42,74,.20)}
+  .task .title{font-weight:700;font-size:14px;line-height:1.3}
+  .task .meta{font-size:12px;color:var(--ink-2);margin-top:2px}
+  .task .status{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;letter-spacing:.04em;color:#fff}
+  .status.todo{background:linear-gradient(180deg,#FFFFFF,#D9EFFF);color:var(--ink-2);box-shadow:inset 0 1px 0 #fff, 0 4px 10px -4px rgba(15,42,74,.20)}
+  .status.doing{background:linear-gradient(180deg,#7CD9FF,#00B7FF);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 6px 14px -6px rgba(0,183,255,.50)}
+  .status.review{background:linear-gradient(180deg,#FFD256,#E69F00);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 6px 14px -6px rgba(230,159,0,.55)}
+  .status.active{background:linear-gradient(180deg,#FF8FCB,#FF5FA2);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 6px 14px -6px rgba(255,95,162,.55)}
+  /* agents */
+  .agents{display:flex;flex-direction:column;gap:10px}
+  .agent{
+    display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;padding:12px;border-radius:18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.55));
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 #fff, 0 6px 14px -8px rgba(15,42,74,.25);
+  }
+  .agent .av{
+    width:50px;height:50px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:800;font-size:18px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 50%),
+      linear-gradient(180deg,#FF8FCB,#FF5FA2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 8px 18px -6px rgba(255,95,162,.55);
+  }
+  .agent.row2 .av{background:
+    linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,#7CD9FF,#00B7FF);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 8px 18px -6px rgba(0,183,255,.50)}
+  .agent.row3 .av{background:
+    linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,#D6BBE8,#9D7ECC);opacity:.85;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 6px 14px -6px rgba(157,126,204,.45)}
+  .agent.row4 .av{background:
+    linear-gradient(180deg,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 50%),
+    linear-gradient(180deg,#C7F081,#9BE34D);
+    color:#1F3D08;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 8px 18px -6px rgba(155,227,77,.55)}
+  .agent .name{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  .agent .doing{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+  .pulse{
+    width:10px;height:10px;border-radius:50%;
+    background:radial-gradient(circle at 30% 25%,#fff 0%,#FF5FA2 70%);
+    box-shadow:0 0 0 0 rgba(255,95,162,.7);animation:beat 1.6s ease-out infinite;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(255,95,162,.7)}
+    70%{box-shadow:0 0 0 14px rgba(255,95,162,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,95,162,0)}
+  }
+  .progress{
+    width:130px;height:12px;border-radius:999px;background:linear-gradient(180deg,#D9EFFF,#A8DCFF);
+    box-shadow:inset 0 1px 2px rgba(15,42,74,.25);overflow:hidden;position:relative;
+  }
+  .progress > i{
+    display:block;height:100%;border-radius:999px;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,0) 50%),
+      linear-gradient(180deg,#7CD9FF,#00B7FF);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .agent.row4 .progress > i{
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,0) 50%),
+      linear-gradient(180deg,#C7F081,#9BE34D);
+  }
+  .progress .v{position:absolute;right:-44px;top:-3px;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+
+  /* feed */
+  .feed{display:flex;flex-direction:column;gap:10px}
+  .ch{
+    display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start;padding:14px;border-radius:18px;
+    background:linear-gradient(180deg,rgba(255,255,255,.90),rgba(255,255,255,.55));
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:inset 0 1px 0 #fff, 0 6px 14px -8px rgba(15,42,74,.25);cursor:pointer;
+  }
+  .ch:hover{box-shadow:inset 0 1px 0 #fff, 0 16px 30px -10px rgba(0,183,255,.30)}
+  .ch .tag{
+    font-size:11.5px;font-weight:700;letter-spacing:.04em;padding:6px 12px;border-radius:999px;color:#fff;
+    background:linear-gradient(180deg,#7CD9FF,#00B7FF);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 4px 10px -4px rgba(0,183,255,.45)
+  }
+  .ch.alert .tag{background:linear-gradient(180deg,#FF8FCB,#FF5FA2);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 4px 10px -4px rgba(255,95,162,.55)}
+  .ch.calm .tag{background:linear-gradient(180deg,#C7F081,#9BE34D);color:#1F3D08;box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 4px 10px -4px rgba(155,227,77,.55)}
+  .ch .who{font-weight:700;font-size:13.5px}
+  .ch .body{font-size:13px;color:var(--ink);line-height:1.55;margin-top:3px}
+  .ch .body em{
+    background:linear-gradient(180deg,#FFE8A0,#FFD256);color:var(--ink);font-style:normal;padding:0 4px;border-radius:4px;
+    box-shadow:inset 0 1px 0 #fff;
+  }
+  .ch .when{font-size:11px;color:var(--ink-2);font-weight:600;letter-spacing:.04em}
+  .ch .unread{
+    color:#fff;font-size:12px;font-weight:800;
+    width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(circle at 30% 25%,rgba(255,255,255,.85) 0%,rgba(255,255,255,0) 30%),
+      linear-gradient(180deg,#FF8FCB,#FF5FA2);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 8px 18px -6px rgba(255,95,162,.55);
+  }
+  /* CTA */
+  .cta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}
+  .cta{
+    border-radius:22px;padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;color:var(--ink);
+    background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.6));
+    border:1px solid var(--glass-edge);
+    box-shadow:inset 0 1px 0 #fff, 0 18px 36px -18px rgba(15,42,74,.30);
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .cta:hover{transform:translateY(-3px);box-shadow:inset 0 1px 0 #fff, 0 26px 50px -18px rgba(0,183,255,.35)}
+  .cta .plus{
+    width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:22px;font-weight:300;
+    background:
+      radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 30%),
+      linear-gradient(180deg,#7CD9FF,#00B7FF);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 10px 20px -6px rgba(0,183,255,.55);
+  }
+  .cta.b .plus{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 30%),linear-gradient(180deg,#FF8FCB,#FF5FA2);box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 10px 20px -6px rgba(255,95,162,.55)}
+  .cta.c .plus{background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.95) 0%,rgba(255,255,255,0) 30%),linear-gradient(180deg,#C7F081,#9BE34D);color:#1F3D08;box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 10px 20px -6px rgba(155,227,77,.55)}
+  .cta h3{margin:0;font-family:"Plus Jakarta Sans";font-weight:800;font-size:16px}
+  .cta p{margin:2px 0 0;font-size:12.5px;color:var(--ink-2)}
+  /* back */
+  .back{
+    position:fixed;left:18px;top:6px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    padding:7px 14px;border-radius:999px;color:var(--ink);text-decoration:none;font-size:12px;font-weight:700;
+    background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,.55));
+    border:1px solid var(--glass-edge);
+    box-shadow:inset 0 1px 0 #fff, 0 14px 30px -14px rgba(15,42,74,.30);
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← 返回方向</a>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><div class="orb"></div>folio</div>
+      <div class="ws">
+        <div class="av">设</div>
+        <div>
+          <div class="name">Folio · 设计组</div>
+          <div class="meta">15 人 · 6 智能体</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">工作流</div>
+      <div class="nav">
+        <button class="active"><span class="icon">★</span>Dashboard</button>
+        <button><span class="icon">▤</span>Issues<span class="badge">12</span></button>
+        <button><span class="icon">⚑</span>Channels<span class="badge">3</span></button>
+        <button><span class="icon">⌘</span>Skills</button>
+      </div>
+
+      <div class="nav-section-title">AI</div>
+      <div class="nav">
+        <button><span class="icon">◎</span>Agents<span class="badge">6</span></button>
+        <button><span class="icon">⚙</span>Autopilots</button>
+      </div>
+
+      <div class="promo">
+        <h4>升级到 Aero Pro</h4>
+        <p>解锁实时反射、动画气泡和 3D 卡片切换效果。</p>
+        <button>开启试用 →</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search">
+          <span>🔎</span>
+          <span>搜索 Issues、频道、智能体…</span>
+          <span class="kbd">⌘ K</span>
+        </div>
+        <button class="iconbtn">🔔</button>
+        <button class="iconbtn user">林</button>
+      </div>
+
+      <section class="hero">
+        <div class="bubble b1"></div>
+        <div class="bubble b2"></div>
+        <div class="bubble b3"></div>
+        <h1>嗨 林一，<br/>今天的 <span class="liq">天空</span> 很通透。</h1>
+        <p>UI 设计师正在画第二轮多巴胺方向草图（78%），资深开发刚 ship 了 reasoning 过滤。一切顺风。</p>
+      </section>
+
+      <section class="stats">
+        <div class="stat">
+          <div class="water"></div>
+          <div class="label">OPEN ISSUES</div>
+          <div class="num aqua">12</div>
+          <div class="meta">+3 这周新建 · 2 待你 review</div>
+        </div>
+        <div class="stat">
+          <div class="water"></div>
+          <div class="label">AGENTS WORKING</div>
+          <div class="num lime">4 / 6</div>
+          <div class="meta">UI 78% · 资深开发 41%</div>
+        </div>
+        <div class="stat">
+          <div class="water"></div>
+          <div class="label">UNREAD CHANNELS</div>
+          <div class="num pink">3</div>
+          <div class="meta">#全员群 有 3 条新消息</div>
+        </div>
+      </section>
+
+      <section class="row">
+        <div class="card">
+          <h2>你的任务</h2>
+          <p class="subtitle">分配给你的 4 个任务，按优先级排序</p>
+          <div class="task">
+            <div class="id">MUL-128</div>
+            <div>
+              <div class="title">重构频道消息列表的滚动行为</div>
+              <div class="meta">资深开发 正在生成 PR · 12 分钟前更新</div>
+            </div>
+            <div class="status doing">DOING</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-131</div>
+            <div>
+              <div class="title">@-mention picker 过滤策略 + IME</div>
+              <div class="meta">UI 设计师 提交了变更 · 等你 review</div>
+            </div>
+            <div class="status review">REVIEW</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-105</div>
+            <div>
+              <div class="title">Dashboard 多巴胺方向探索</div>
+              <div class="meta">你 自己起的 · 4 个方向 mockup 已生成</div>
+            </div>
+            <div class="status active">活跃</div>
+          </div>
+          <div class="task">
+            <div class="id">MUL-119</div>
+            <div>
+              <div class="title">rate-limit 配置面板</div>
+              <div class="meta">未指派 · 估时 2 天</div>
+            </div>
+            <div class="status todo">TODO</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>智能体动态</h2>
+          <p class="subtitle">实时展示谁在干活</p>
+          <div class="agents">
+            <div class="agent row1">
+              <div class="av">UI</div>
+              <div>
+                <div class="name">UI 设计师 <span class="pulse"></span></div>
+                <div class="doing">为 MUL-105 生成多巴胺草图</div>
+              </div>
+              <div class="progress"><i style="width:78%"></i><span class="v">78%</span></div>
+            </div>
+            <div class="agent row2">
+              <div class="av">DV</div>
+              <div>
+                <div class="name">资深开发</div>
+                <div class="doing">重写 daemon channel 路径</div>
+              </div>
+              <div class="progress"><i style="width:41%"></i><span class="v">41%</span></div>
+            </div>
+            <div class="agent row3">
+              <div class="av">AR</div>
+              <div>
+                <div class="name">系统架构师</div>
+                <div class="doing">空闲 · 上次回复 6 分钟前</div>
+              </div>
+              <div class="progress"><i style="width:0%"></i><span class="v">—</span></div>
+            </div>
+            <div class="agent row4">
+              <div class="av">QA</div>
+              <div>
+                <div class="name">测试工程师</div>
+                <div class="doing">e2e 频道金路径回归</div>
+              </div>
+              <div class="progress"><i style="width:12%"></i><span class="v">12%</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>频道动态</h2>
+        <p class="subtitle">未读 3 条 · 最近 13:42</p>
+        <div class="feed">
+          <div class="ch alert">
+            <div class="tag"># 全员群</div>
+            <div>
+              <div class="who">Alice · 13:42</div>
+              <div class="body">新版 UI 大家给点 <em>反馈</em> 啦！我倾向方向 6，怀旧 + 透明感真的很 AI。</div>
+            </div>
+            <div class="unread">3</div>
+          </div>
+          <div class="ch">
+            <div class="tag"># 设计讨论</div>
+            <div>
+              <div class="who">UI 设计师 · 13:38</div>
+              <div class="body">三个核心：(1) 玻璃 + 高光；(2) 主色：天空青 + 草地绿 + 樱花粉；(3) 圆形/液体形态。</div>
+            </div>
+            <div class="when">13:38</div>
+          </div>
+          <div class="ch calm">
+            <div class="tag"># ai-experiments</div>
+            <div>
+              <div class="who">系统架构师 · 11:01</div>
+              <div class="body">Frutiger Aero 在低端机性能要测；多层 inset shadow 累积成本不低。</div>
+            </div>
+            <div class="when">11:01</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-row">
+        <div class="cta">
+          <div class="plus">＋</div>
+          <div><h3>新建 Issue</h3><p>把脑子里那个事记下来</p></div>
+        </div>
+        <div class="cta b">
+          <div class="plus">＋</div>
+          <div><h3>新建频道</h3><p>开个新群叫上几个智能体</p></div>
+        </div>
+        <div class="cta c">
+          <div class="plus">＋</div>
+          <div><h3>新建智能体</h3><p>训一个会说话的人形</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

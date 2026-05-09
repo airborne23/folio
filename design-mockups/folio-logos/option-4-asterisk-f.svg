@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Folio">
+  <!-- Cream paper background -->
+  <rect width="80" height="80" rx="18" fill="#F5F0E5"/>
+  <!-- ✻ asterisk centered, slightly upper-left to leave room for F badge -->
+  <text x="34" y="56"
+        font-family="'Source Serif 4', 'Source Serif Pro', Georgia, 'Times New Roman', serif"
+        font-weight="500" font-size="54"
+        text-anchor="middle"
+        fill="#CC785C">✻</text>
+  <!-- F badge — bottom-right, ink, smaller, italic to read as marginalia -->
+  <text x="63" y="69"
+        font-family="'Source Serif 4', 'Source Serif Pro', Georgia, serif"
+        font-weight="600" font-style="italic" font-size="22"
+        text-anchor="middle"
+        fill="#191919">F</text>
+</svg>

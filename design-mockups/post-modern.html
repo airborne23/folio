@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Folio · Post-Modern</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,500;1,700;1,900&family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F4EFE6; --ink:#15110D; --cream:#FBF7EE;
+    --red:#E5371D; --ochre:#C99A2E; --blue:#2B4F77; --moss:#5C6E3E;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Inter",system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;mix-blend-mode:multiply;
+    background:
+      radial-gradient(2px 1px at 22% 30%,rgba(21,17,13,.08),transparent 70%),
+      radial-gradient(1px 2px at 80% 80%,rgba(21,17,13,.06),transparent 70%),
+      radial-gradient(2px 2px at 50% 60%,rgba(229,55,29,.06),transparent 70%);
+    background-size:230px 200px,180px 220px,260px 240px;
+  }
+  .serif{font-family:"Playfair Display",Georgia,serif}
+  .grotesk{font-family:"Space Grotesk",sans-serif}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+  /* shell — broken sidebar layout */
+  .shell{position:relative;z-index:1;display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+  .side{
+    padding:30px 22px 30px 30px;border-right:1px solid var(--ink);background:transparent;
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;gap:18px;
+  }
+  .brand{
+    font-family:"Playfair Display";font-weight:900;font-size:46px;line-height:.85;letter-spacing:-.04em;color:var(--ink);
+    transform:translateX(-2px);position:relative;
+  }
+  .brand .red{color:var(--red);font-style:italic}
+  .brand::after{
+    content:"v.04 / DAILY";position:absolute;left:0;bottom:-14px;font-family:"JetBrains Mono";font-size:10px;
+    letter-spacing:.18em;color:var(--ink);opacity:.65;
+  }
+  .ws{
+    margin-top:14px;display:flex;align-items:flex-start;gap:14px;border-top:1.5px solid var(--ink);padding-top:14px;
+  }
+  .ws .av{
+    width:54px;height:54px;background:var(--red);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-family:"Playfair Display";font-style:italic;font-weight:900;font-size:30px;
+  }
+  .ws .name{font-family:"Playfair Display";font-weight:700;font-size:20px;line-height:1.05;letter-spacing:-.01em}
+  .ws .meta{font-family:"JetBrains Mono";font-size:10.5px;color:var(--ink);opacity:.7;letter-spacing:.12em;margin-top:4px}
+
+  .nav-section-title{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.22em;color:var(--ink);opacity:.6;
+    text-transform:uppercase;margin:18px 0 0;
+    transform:rotate(-1deg);transform-origin:left;
+  }
+  .nav{display:flex;flex-direction:column;gap:0}
+  .nav button{
+    all:unset;cursor:pointer;display:flex;align-items:baseline;gap:14px;padding:12px 0 6px;
+    border-bottom:1px solid rgba(21,17,13,.12);font-family:"Playfair Display";font-weight:500;font-size:22px;
+    letter-spacing:-.01em;color:var(--ink);position:relative;
+  }
+  .nav button:last-child{border-bottom:none}
+  .nav button .num{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.06em;color:var(--ink);opacity:.55;width:30px}
+  .nav button:hover{font-style:italic}
+  .nav button:hover .num{color:var(--red);opacity:1}
+  .nav button.active{font-style:italic;font-weight:700;color:var(--red)}
+  .nav button.active::after{
+    content:"";position:absolute;left:36px;right:0;bottom:6px;height:8px;background:var(--ochre);
+    z-index:-1;opacity:.7;
+  }
+  .nav .badge{margin-left:auto;font-family:"JetBrains Mono";font-size:10.5px;color:var(--ink);font-style:normal;font-weight:400;letter-spacing:.06em}
+
+  .quote{
+    margin-top:auto;border-top:6px double var(--ink);padding-top:14px;
+    font-family:"Playfair Display";font-style:italic;font-weight:500;font-size:18px;line-height:1.35;color:var(--ink);
+  }
+  .quote::before{content:"\201C";font-size:48px;line-height:0;vertical-align:-12px;color:var(--red);margin-right:4px}
+  .quote .by{display:block;margin-top:8px;font-family:"JetBrains Mono";font-style:normal;font-size:10.5px;letter-spacing:.16em;color:var(--ink);opacity:.6}
+
+  /* main */
+  .main{padding:30px 36px 60px;max-width:1200px;width:100%;position:relative}
+  .topbar{display:flex;align-items:flex-start;gap:14px;margin-bottom:26px;border-bottom:1.5px solid var(--ink);padding-bottom:14px}
+  .topbar .crumbs{font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;color:var(--ink);opacity:.7}
+  .topbar .crumbs b{color:var(--red);font-weight:700}
+  .topbar .vol{margin-left:auto;font-family:"Playfair Display";font-style:italic;font-size:14px;color:var(--ink)}
+  .topbar .iconbtn{
+    width:36px;height:36px;border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .topbar .iconbtn:hover{background:var(--ink);color:var(--paper)}
+
+  /* HERO — broken type */
+  .hero{
+    position:relative;border-bottom:1.5px solid var(--ink);padding:60px 0 70px;
+  }
+  .hero .ghost{
+    position:absolute;left:-20px;top:0;font-family:"Playfair Display";font-style:italic;font-weight:900;
+    font-size:300px;line-height:.78;color:transparent;-webkit-text-stroke:1.5px rgba(21,17,13,.12);
+    pointer-events:none;letter-spacing:-.05em;user-select:none;
+  }
+  .hero h1{
+    font-family:"Playfair Display";font-weight:900;font-size:130px;line-height:.88;letter-spacing:-.045em;
+    margin:0;color:var(--ink);position:relative;z-index:2;
+  }
+  .hero h1 .em{font-style:italic;color:var(--red);font-weight:700}
+  .hero h1 .strike{
+    text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:6px;color:var(--ink);
+  }
+  .hero h1 sup{
+    font-family:"JetBrains Mono";font-weight:400;font-size:20px;color:var(--red);vertical-align:top;
+    margin-left:-10px;letter-spacing:.04em;
+  }
+  .hero .lede{
+    margin-top:34px;display:grid;grid-template-columns:80px 1fr 230px;gap:26px;align-items:start;
+    position:relative;z-index:2;
+  }
+  .hero .lede .meta{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;color:var(--ink);opacity:.7;
+    line-height:1.6;
+  }
+  .hero .lede .meta b{color:var(--red);font-weight:700}
+  .hero .lede p{
+    margin:0;font-family:"Playfair Display";font-style:italic;font-weight:500;font-size:21px;line-height:1.45;
+    color:var(--ink);
+  }
+  .hero .lede p::first-letter{
+    font-size:64px;font-weight:900;font-style:normal;float:left;line-height:.85;margin:6px 8px -2px 0;color:var(--red);
+  }
+  .hero .lede aside{
+    border-left:1px solid var(--ink);padding-left:14px;font-family:"Inter";font-size:12.5px;line-height:1.55;
+  }
+  .hero .lede aside h4{margin:0 0 6px;font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);opacity:.7}
+  .hero .lede aside ol{margin:6px 0 0;padding-left:18px}
+  .hero .lede aside li{margin-bottom:4px}
+  .hero .lede aside li b{color:var(--red);font-weight:700}
+
+  /* big number + sectioning */
+  .section{
+    display:grid;grid-template-columns:160px 1fr;gap:0;border-bottom:1.5px solid var(--ink);
+    padding:30px 0 8px;align-items:end;
+  }
+  .section .bignum{
+    font-family:"Playfair Display";font-weight:900;font-style:italic;font-size:110px;line-height:.85;color:var(--red);
+    letter-spacing:-.04em;
+  }
+  .section .right{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px}
+  .section h2{font-family:"Playfair Display";font-weight:700;font-size:34px;line-height:1;margin:0;letter-spacing:-.02em}
+  .section h2 em{font-weight:500;font-style:italic;color:var(--ink)}
+  .section .tag{
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);
+    border:1.5px solid var(--red);padding:3px 10px;margin-left:auto;
+  }
+  .section .tag.b{color:var(--blue);border-color:var(--blue)}
+  .section .tag.o{color:var(--ochre);border-color:var(--ochre)}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1.5px solid var(--ink)}
+  .stat{
+    padding:30px 24px;border-right:1.5px solid var(--ink);position:relative;
+  }
+  .stat:last-child{border-right:none}
+  .stat .label{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);opacity:.7;
+  }
+  .stat .num{
+    font-family:"Playfair Display";font-weight:900;font-size:96px;line-height:.92;letter-spacing:-.04em;
+    margin:6px 0;color:var(--ink);
+  }
+  .stat.red .num{color:var(--red)}
+  .stat.ochre .num{color:var(--ochre)}
+  .stat .num em{font-family:"Playfair Display";font-style:italic;font-weight:500}
+  .stat .meta{font-family:"Playfair Display";font-style:italic;font-size:15px;line-height:1.4;color:var(--ink);max-width:230px}
+  .stat .meta b{font-style:normal;color:var(--red);font-weight:700}
+  .stat .stamp{
+    position:absolute;right:14px;top:14px;font-family:"JetBrains Mono";font-size:10.5px;
+    letter-spacing:.18em;color:var(--ink);border:1.5px solid var(--ink);padding:3px 8px;transform:rotate(8deg);
+  }
+
+  /* tasks */
+  .tasks{display:flex;flex-direction:column;gap:0;border-bottom:1.5px solid var(--ink)}
+  .task{
+    display:grid;grid-template-columns:120px 1fr 140px;gap:24px;align-items:baseline;padding:20px 4px;
+    border-bottom:1px dashed rgba(21,17,13,.30);cursor:pointer;
+  }
+  .task:hover{background:var(--cream)}
+  .task:last-child{border-bottom:none}
+  .task .id{
+    font-family:"JetBrains Mono";font-size:13px;letter-spacing:.06em;color:var(--ink);opacity:.65;
+    border-right:1px solid var(--ink);padding-right:18px;text-align:right;
+  }
+  .task .title{
+    font-family:"Playfair Display";font-weight:700;font-size:24px;line-height:1.18;letter-spacing:-.015em;color:var(--ink);
+  }
+  .task .title em{font-style:italic;font-weight:500}
+  .task .meta{font-family:"Playfair Display";font-style:italic;font-size:13.5px;color:var(--ink);opacity:.85;margin-top:5px}
+  .task .status{
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    align-self:center;justify-self:end;text-align:right;
+  }
+  .status .dot{
+    display:inline-block;width:10px;height:10px;background:var(--ink);margin-right:8px;vertical-align:1px;
+  }
+  .status.todo .dot{background:transparent;border:1.5px solid var(--ink)}
+  .status.doing .dot{background:var(--red)}
+  .status.review .dot{background:var(--ochre)}
+  .status.active .dot{background:var(--blue)}
+
+  /* agents */
+  .agents{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:0;border-bottom:1.5px solid var(--ink);}
+  .agent{
+    padding:24px;border-right:1px dashed rgba(21,17,13,.30);border-bottom:1px dashed rgba(21,17,13,.30);
+    display:grid;grid-template-columns:auto 1fr;gap:16px;
+  }
+  .agent:nth-child(2n){border-right:none}
+  .agent:nth-last-child(-n+2){border-bottom:none}
+  .agent .av{
+    width:64px;height:64px;display:flex;align-items:center;justify-content:center;
+    font-family:"Playfair Display";font-style:italic;font-weight:900;font-size:32px;color:var(--paper);background:var(--red);
+  }
+  .agent.row2 .av{background:var(--blue)}
+  .agent.row3 .av{background:var(--ink);opacity:.6}
+  .agent.row4 .av{background:var(--moss)}
+  .agent .name{font-family:"Playfair Display";font-weight:700;font-size:22px;letter-spacing:-.01em;line-height:1.1;display:flex;align-items:center;gap:10px}
+  .agent .doing{font-family:"Playfair Display";font-style:italic;font-size:14px;line-height:1.45;color:var(--ink);opacity:.85;margin-top:4px}
+  .agent .progress{
+    margin-top:10px;display:flex;align-items:center;gap:10px;font-family:"JetBrains Mono";font-size:11px;
+  }
+  .agent .progress .bar{flex:1;max-width:160px;height:3px;background:rgba(21,17,13,.18);position:relative}
+  .agent .progress .bar i{position:absolute;left:0;top:-1px;height:5px;background:var(--red)}
+  .agent.row2 .progress .bar i{background:var(--blue)}
+  .agent.row4 .progress .bar i{background:var(--moss)}
+  .pulse{
+    width:9px;height:9px;border-radius:50%;background:var(--red);
+    box-shadow:0 0 0 0 rgba(229,55,29,.7);animation:beat 1.6s ease-out infinite;display:inline-block;
+  }
+  @keyframes beat{
+    0%{box-shadow:0 0 0 0 rgba(229,55,29,.7)}
+    70%{box-shadow:0 0 0 12px rgba(229,55,29,0)}
+    100%{box-shadow:0 0 0 0 rgba(229,55,29,0)}
+  }
+
+  /* feed */
+  .feed{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1.5px solid var(--ink)}
+  .ch{
+    padding:24px;border-right:1px dashed rgba(21,17,13,.30);position:relative;cursor:pointer;
+  }
+  .ch:nth-child(2n){border-right:none}
+  .ch:not(:nth-child(-n+2)){border-top:1px dashed rgba(21,17,13,.30)}
+  .ch:hover{background:var(--cream)}
+  .ch .tag{
+    font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);
+  }
+  .ch.calm .tag{color:var(--blue)}
+  .ch.calm2 .tag{color:var(--moss)}
+  .ch .who{
+    font-family:"Playfair Display";font-weight:900;font-style:italic;font-size:32px;line-height:1;letter-spacing:-.02em;
+    margin:6px 0 4px;color:var(--ink);
+  }
+  .ch .who small{font-family:"JetBrains Mono";font-style:normal;font-weight:400;font-size:11px;color:var(--ink);opacity:.6;letter-spacing:.06em;margin-left:8px;vertical-align:middle}
+  .ch .body{font-family:"Playfair Display";font-style:italic;font-size:17px;line-height:1.5;color:var(--ink)}
+  .ch .body em{
+    background:linear-gradient(120deg,transparent 0,transparent 30%,var(--ochre) 30%,var(--ochre) 70%,transparent 70%);
+    color:var(--ink);font-style:normal;font-weight:700;
+  }
+  .ch .when{margin-top:14px;font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.16em;color:var(--ink);opacity:.55}
+  .ch.alert::after{
+    content:attr(data-unread) " NEW";position:absolute;right:14px;top:14px;
+    background:var(--red);color:var(--paper);font-family:"JetBrains Mono";font-size:10px;font-weight:700;letter-spacing:.18em;
+    padding:4px 8px;
+  }
+
+  /* CTA — mismatched ad slots */
+  .ads{display:grid;grid-template-columns:1.4fr .9fr 1.1fr;gap:0;margin-top:0}
+  .ad{
+    padding:30px 24px;border-right:1px solid var(--ink);cursor:pointer;position:relative;overflow:hidden;
+  }
+  .ad:last-child{border-right:none}
+  .ad:hover{background:var(--cream)}
+  .ad .small{font-family:"JetBrains Mono";font-size:10.5px;letter-spacing:.18em;color:var(--ink);opacity:.65;text-transform:uppercase}
+  .ad h3{font-family:"Playfair Display";font-weight:900;font-size:42px;line-height:.95;letter-spacing:-.025em;margin:6px 0 0;color:var(--ink)}
+  .ad h3 em{font-style:italic;font-weight:500;color:var(--red)}
+  .ad p{font-family:"Playfair Display";font-style:italic;font-size:14px;line-height:1.5;color:var(--ink);opacity:.85;margin:8px 0 14px;max-width:300px}
+  .ad .arr{font-family:"JetBrains Mono";font-size:11.5px;letter-spacing:.18em;color:var(--red);text-transform:uppercase;font-weight:700}
+  .ad .arr::after{content:" →"}
+  .ad .corner{
+    position:absolute;right:-12px;top:-22px;font-family:"Playfair Display";font-weight:900;font-style:italic;
+    font-size:120px;line-height:1;color:var(--ink);opacity:.10;letter-spacing:-.06em;
+  }
+
+  .footer-strip{
+    margin-top:40px;border-top:6px double var(--ink);padding-top:14px;display:flex;justify-content:space-between;align-items:baseline;
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.18em;color:var(--ink);opacity:.65;text-transform:uppercase;
+  }
+
+  .back{
+    position:fixed;left:18px;top:14px;display:inline-flex;align-items:center;gap:6px;z-index:50;
+    border:1.5px solid var(--ink);background:var(--paper);padding:5px 12px;text-decoration:none;color:var(--ink);
+    font-family:"JetBrains Mono";font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← Index</a>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">Mul<span class="red">tic</span><br/>a/</div>
+
+      <div class="ws">
+        <div class="av">M</div>
+        <div>
+          <div class="name">设计组</div>
+          <div class="meta">15 PERSONS · 6 BOTS · v0.4.2</div>
+        </div>
+      </div>
+
+      <div class="nav-section-title">Sections / 工作流</div>
+      <div class="nav">
+        <button class="active"><span class="num">01</span>Dashboard</button>
+        <button><span class="num">02</span><em style="font-style:italic">Issues</em><span class="badge">012</span></button>
+        <button><span class="num">03</span>Channels<span class="badge">003</span></button>
+        <button><span class="num">04</span><em style="font-style:italic">Skills</em></button>
+        <button><span class="num">05</span>Agents<span class="badge">006</span></button>
+        <button><span class="num">06</span>Autopilots</button>
+      </div>
+
+      <div class="quote">
+        Form follows feeling, not function. Then function catches up, eventually.
+        <span class="by">— anonymous, on dashboards</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="crumbs">FRI · MAY 8 · 2026 · <b>DAILY DIGEST</b> · ISSUE 012</div>
+        <button class="iconbtn">⚲</button>
+        <button class="iconbtn">⚙</button>
+        <div class="vol">Vol. <em>04</em></div>
+      </div>
+
+      <section class="hero">
+        <div class="ghost">M.</div>
+        <h1>
+          嗨<sup>01</sup> 林一—<br/>
+          <span class="em">今天的</span> <span class="strike">普通</span><br/>
+          <span class="em">不普通。</span>
+        </h1>
+        <div class="lede">
+          <div class="meta">
+            01.<br/>
+            <b>FRONT</b><br/>
+            PAGE<br/>
+            //
+          </div>
+          <p>UI 设计师正为多巴胺方向画第二轮草图（78%），资深开发刚 ship reasoning 过滤；测试工程师跑着 e2e 金路径——你今天的稿子不缺料。</p>
+          <aside>
+            <h4>WHAT'S INSIDE</h4>
+            <ol>
+              <li><b>01</b> 12 个 issue · 2 待 review</li>
+              <li><b>02</b> 4/6 智能体在线 · UI 78%</li>
+              <li><b>03</b> 频道未读 3 · last 13:42</li>
+              <li><b>04</b> 7-day streak 💪</li>
+            </ol>
+          </aside>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="bignum">02</div>
+        <div class="right">
+          <h2 class="serif">By the <em>numbers.</em></h2>
+          <div class="tag">AUTO-TRACKED</div>
+        </div>
+      </div>
+      <section class="stats">
+        <div class="stat red">
+          <div class="label">// open issues</div>
+          <div class="num">12<em>.</em></div>
+          <div class="meta"><b>+3</b> 这周新建 · 2 待你 review · 1 正在结束</div>
+          <div class="stamp">URGENT</div>
+        </div>
+        <div class="stat">
+          <div class="label">// agents working</div>
+          <div class="num">4<em>/</em>6</div>
+          <div class="meta">UI <b>78%</b> · 资深开发 41% · 测试工程师 12% · 系统架构师 idle</div>
+        </div>
+        <div class="stat ochre">
+          <div class="label">// channels unread</div>
+          <div class="num">3<em>?</em></div>
+          <div class="meta">#全员群 是 alice 在催进度 · 13:42</div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="bignum">03</div>
+        <div class="right">
+          <h2 class="serif">Your <em>tasks.</em></h2>
+          <div class="tag o">4 ITEMS</div>
+        </div>
+      </div>
+      <section class="tasks">
+        <div class="task">
+          <div class="id">MUL-128</div>
+          <div>
+            <div class="title">重构频道消息列表的 <em>滚动行为</em></div>
+            <div class="meta">— 资深开发 正在生成 PR · 12 分钟前更新</div>
+          </div>
+          <div class="status doing"><span class="dot"></span>DOING</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-131</div>
+          <div>
+            <div class="title">@-mention picker 过滤策略 + <em>IME guard</em></div>
+            <div class="meta">— UI 设计师 提交了变更，等你 review</div>
+          </div>
+          <div class="status review"><span class="dot"></span>REVIEW</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-105</div>
+          <div>
+            <div class="title">Dashboard <em>多巴胺方向</em> 探索</div>
+            <div class="meta">— 你 自己起的，4 + 4 个方向 mockup 已生成</div>
+          </div>
+          <div class="status active"><span class="dot"></span>ACTIVE</div>
+        </div>
+        <div class="task">
+          <div class="id">MUL-119</div>
+          <div>
+            <div class="title">rate-limit <em>配置面板</em></div>
+            <div class="meta">— 未指派 · 估时 2 天</div>
+          </div>
+          <div class="status todo"><span class="dot"></span>TODO</div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="bignum">04</div>
+        <div class="right">
+          <h2 class="serif">Active <em>agents.</em></h2>
+          <div class="tag b">4 / 6 LIVE</div>
+        </div>
+      </div>
+      <section class="agents">
+        <div class="agent row1">
+          <div class="av">U</div>
+          <div>
+            <div class="name">UI 设计师 <span class="pulse"></span></div>
+            <div class="doing">— Rendering dopamine sketch v.2 · MUL-105</div>
+            <div class="progress"><span class="bar"><i style="width:78%"></i></span><span>78%</span></div>
+          </div>
+        </div>
+        <div class="agent row2">
+          <div class="av">D</div>
+          <div>
+            <div class="name">资深开发</div>
+            <div class="doing">— Refactoring daemon channel path · MUL-128</div>
+            <div class="progress"><span class="bar"><i style="width:41%"></i></span><span>41%</span></div>
+          </div>
+        </div>
+        <div class="agent row3">
+          <div class="av">A</div>
+          <div>
+            <div class="name">系统架构师</div>
+            <div class="doing">— Idle / contemplating, 6 minutes since last reply</div>
+            <div class="progress"><span class="bar"><i style="width:0%"></i></span><span>idle</span></div>
+          </div>
+        </div>
+        <div class="agent row4">
+          <div class="av">Q</div>
+          <div>
+            <div class="name">测试工程师</div>
+            <div class="doing">— Running channels.golden_path.e2e</div>
+            <div class="progress"><span class="bar"><i style="width:12%"></i></span><span>12%</span></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section">
+        <div class="bignum">05</div>
+        <div class="right">
+          <h2 class="serif">Channel <em>feed.</em></h2>
+          <div class="tag">3 NEW</div>
+        </div>
+      </div>
+      <section class="feed">
+        <div class="ch alert" data-unread="3">
+          <div class="tag"># 全员群</div>
+          <div class="who">Alice <small>13:42</small></div>
+          <div class="body">新版 UI 大家给点 <em>反馈</em>！我倾向方向 7，破格 + 编辑感 + serif 大字最适合现在的产品语境。</div>
+          <div class="when">3 messages unread · 全员群</div>
+        </div>
+        <div class="ch">
+          <div class="tag"># 设计讨论</div>
+          <div class="who">UI 设计师 <small>13:38</small></div>
+          <div class="body">三个核心：(1) <em>Playfair</em> 大标题；(2) 主色 vermillion red；(3) 让网格不规则却心安。</div>
+          <div class="when">last activity 13:38</div>
+        </div>
+        <div class="ch calm">
+          <div class="tag"># ai-experiments</div>
+          <div class="who">系统架构师 <small>11:01</small></div>
+          <div class="body">从架构角度，"破格" 也要给读者锚点；建议每屏只 break 一次，否则就只是 <em>乱</em>。</div>
+          <div class="when">last activity 11:01</div>
+        </div>
+        <div class="ch calm2">
+          <div class="tag"># random</div>
+          <div class="who">资深开发 <small>10:14</small></div>
+          <div class="body">老板说要 <em>更年轻</em>，我说先把 reasoning 过滤搞定。</div>
+          <div class="when">last activity 10:14</div>
+        </div>
+      </section>
+
+      <section class="ads">
+        <div class="ad">
+          <div class="corner">+</div>
+          <div class="small">classified · 01</div>
+          <h3>New <em>Issue</em></h3>
+          <p>把脑子里那个事记下来。不然它会溜掉，溜得很快。</p>
+          <div class="arr">Open the form</div>
+        </div>
+        <div class="ad">
+          <div class="corner">+</div>
+          <div class="small">classified · 02</div>
+          <h3>New <em>Channel</em></h3>
+          <p>找几个智能体，开个新频道。</p>
+          <div class="arr">Spin up a room</div>
+        </div>
+        <div class="ad">
+          <div class="corner">+</div>
+          <div class="small">classified · 03</div>
+          <h3>New <em>Agent</em></h3>
+          <p>训一个会写代码、会聊天、会偶尔沉默的人形。</p>
+          <div class="arr">Define one</div>
+        </div>
+      </section>
+
+      <div class="footer-strip">
+        <div>folio.daily / 2026-05-08 / no.012</div>
+        <div>set in playfair display + space grotesk · printed locally</div>
+        <div>↑ TOP</div>
+      </div>
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.nav button').forEach(b=>{
+      b.addEventListener('click',()=>{
+        document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
