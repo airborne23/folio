@@ -301,6 +301,7 @@ function Shell({ logo, children }: { logo?: ReactNode; children: ReactNode }) {
       <FolioIcon className="text-6xl" />
       {logo && <div className="mt-4">{logo}</div>}
       <div className="mt-6 flex flex-col items-center">{children}</div>
+      {/* eslint-disable-next-line i18next/no-literal-string -- brand tagline; not localized. */}
       <footer className="mt-16 font-serif text-xs italic text-muted-foreground">
         Folio · designed with patience
       </footer>

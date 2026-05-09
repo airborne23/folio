@@ -94,7 +94,7 @@ func openBrowser(url string) error {
 func runAuthLogin(cmd *cobra.Command, args []string) error {
 	if cmd.Flags().Changed("token") {
 		tokenFlag, _ := cmd.Flags().GetString("token")
-		// `--token mul_xxx` (space form) is what users actually type — that's
+		// `--token fol_xxx` (space form) is what users actually type — that's
 		// the form from the docs and from #1994. NoOptDefVal prevents pflag
 		// from consuming the next arg as the flag value, so it lands here as
 		// a positional. Promote it to the token value.
@@ -346,8 +346,8 @@ func runAuthLoginToken(cmd *cobra.Command, providedToken string) error {
 	if token == "" {
 		return fmt.Errorf("token is required")
 	}
-	if !strings.HasPrefix(token, "mul_") {
-		return fmt.Errorf("invalid token format: must start with mul_")
+	if !strings.HasPrefix(token, "fol_") {
+		return fmt.Errorf("invalid token format: must start with fol_")
 	}
 
 	serverURL := resolveServerURL(cmd)

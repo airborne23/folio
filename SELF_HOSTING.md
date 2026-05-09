@@ -120,6 +120,17 @@ For on-premise deployments with custom domains:
 folio setup self-host --server-url https://api.example.com --app-url https://app.example.com
 ```
 
+**Headless servers (no browser):** mint a Personal Access Token in **Settings → Personal Access Tokens** in the web UI, then pass it inline with `--token` to skip the OAuth flow entirely:
+
+```bash
+folio setup self-host \
+  --server-url https://api.example.com \
+  --app-url    https://app.example.com \
+  --token fol_xxxxxxxxxxxx
+```
+
+This does the same as the interactive flow (config + login + workspace discovery + daemon start) without opening a browser, so it's safe to script for fleet provisioning.
+
 To verify the daemon is running:
 
 ```bash

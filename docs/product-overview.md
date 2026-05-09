@@ -113,8 +113,8 @@ Claude Code · Codex · OpenClaw · OpenCode · Hermes · Gemini · Pi · Cursor
 | **Pin 固定** | 个人侧边栏快捷方式，把常用的 issue/project 置顶 | `pinned_item` |
 | **Reaction 反应** | Issue 或评论上的 emoji 反应，跟 GitHub/Slack 一样 | `issue_reaction`, `comment_reaction` |
 | **Attachment 附件** | Issue 或评论的文件上传，支持 S3/CloudFront 或本地存储 | `attachment` |
-| **Personal Access Token (PAT)** | 用户级 API token，CLI 和自动化用。`mul_` 前缀 | `personal_access_token` |
-| **Daemon Token** | 单 workspace 单 daemon 的 token。`mdt_` 前缀，比 PAT 权限范围更小 | `daemon_token` |
+| **Personal Access Token (PAT)** | 用户级 API token，CLI 和自动化用。`fol_` 前缀 | `personal_access_token` |
+| **Daemon Token** | 单 workspace 单 daemon 的 token。`fdt_` 前缀，比 PAT 权限范围更小 | `daemon_token` |
 | **Session Resumption 会话恢复** | 同一对 (agent, issue) 的下一次任务会自动复用上次 Claude Code 的 `session_id` 和工作目录——历史对话、文件状态都保留 | `agent_task_queue.session_id`, `.work_dir` |
 | **MCP (Model Context Protocol)** | Anthropic 提出的协议，让 agent 通过标准接口调用外部工具。每个 agent 可配自己的 MCP server 列表 | `agent.mcp_config` (JSONB) |
 | **Workspace Context 工作区上下文** | 工作区级别的 agent 系统提示词。所有该工作区的 agent 都会感知到它 | `workspace.context` |

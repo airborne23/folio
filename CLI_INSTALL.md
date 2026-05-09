@@ -140,7 +140,8 @@ folio auth status
 Expected output should show the authenticated user and server URL.
 
 **If login fails:**
-- If no browser is available (headless environment), the user can generate a Personal Access Token at `https://app.folio.ai/settings` and run: `folio login --token <mul_...>` (use `--token=` with an empty value to be prompted interactively).
+- If no browser is available (headless environment), the user can generate a Personal Access Token at `https://app.folio.ai/settings` and run: `folio login --token <fol_...>` (use `--token=` with an empty value to be prompted interactively).
+- For self-hosted setups, `folio setup self-host --server-url <URL> --app-url <URL> --token <fol_...>` does config + login + daemon start in one command — useful for fleet provisioning where every node skips the browser flow.
 - If the server URL needs to be customized: `folio config set server_url <url>` before logging in.
 
 ---

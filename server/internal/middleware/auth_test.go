@@ -219,7 +219,7 @@ func TestAuth_InvalidPAT(t *testing.T) {
 	}))
 
 	req := httptest.NewRequest("GET", "/api/me", nil)
-	req.Header.Set("Authorization", "Bearer mul_invalid_token_here")
+	req.Header.Set("Authorization", "Bearer fol_invalid_token_here")
 	w := httptest.NewRecorder()
 	handler.ServeHTTP(w, req)
 
@@ -242,7 +242,7 @@ func TestAuth_PATCacheHit(t *testing.T) {
 		t.Fatal("expected non-nil cache")
 	}
 
-	const rawToken = "mul_cache_hit_test_token"
+	const rawToken = "fol_cache_hit_test_token"
 	hash := auth.HashToken(rawToken)
 	cache.Set(context.Background(), hash, "cached-user-id", auth.AuthCacheTTL)
 

@@ -43,8 +43,12 @@ vi.mock("@folio/ui/components/ui/sidebar", () => ({
   SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SidebarHeader: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SidebarMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SidebarMenuAction: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
   SidebarMenuButton: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
   SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SidebarMenuSub: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  SidebarMenuSubButton: ({ children }: { children: React.ReactNode }) => <button type="button">{children}</button>,
+  SidebarMenuSubItem: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   SidebarRail: () => null,
 }));
 vi.mock("@folio/ui/components/ui/dropdown-menu", () => ({
@@ -99,6 +103,16 @@ vi.mock("@folio/core/paths", () => ({
     channelDetail: (id: string) => `/acme/channels/${id}`,
   }),
 }));
+vi.mock("@folio/core/hooks", () => ({ useWorkspaceId: () => "ws-1" }));
+vi.mock("@folio/core/layout", () => ({
+  useSidebarExpansionStore: Object.assign(() => false, {
+    getState: () => ({ expanded: {}, toggle: vi.fn() }),
+  }),
+}));
+vi.mock("@folio/core/channels", () => ({ channelListOptions: () => ({ queryKey: ["channels"] }) }));
+vi.mock("@folio/core/autopilots/queries", () => ({ autopilotListOptions: () => ({ queryKey: ["autopilots"] }) }));
+vi.mock("@folio/ui/components/common/folio-icon", () => ({ FolioIcon: () => <span /> }));
+vi.mock("../common/actor-avatar", () => ({ ActorAvatar: () => <span /> }));
 vi.mock("@folio/core/api", async (importOriginal) => ({ ...(await importOriginal<typeof import("@folio/core/api")>()), api: {} }));
 vi.mock("@folio/core/inbox/queries", () => ({ deduplicateInboxItems: (items: unknown[]) => items, inboxKeys: { list: () => ["inbox"] } }));
 vi.mock("@folio/core/issues/queries", () => ({ issueDetailOptions: () => ({ queryKey: ["issue"] }) }));
@@ -107,9 +121,13 @@ vi.mock("@folio/core/issues/stores/draft-store", () => ({ useIssueDraftStore: ()
 vi.mock("@folio/core/modals", () => ({ useModalStore: { getState: () => ({ modal: null, open: vi.fn() }) } }));
 vi.mock("@folio/core/pins/mutations", () => ({ useDeletePin: () => ({ mutate: deletePin }), useReorderPins: () => ({ mutate: vi.fn() }) }));
 vi.mock("@folio/core/pins/queries", () => ({ pinListOptions: () => ({ queryKey: ["pins"] }) }));
-vi.mock("@folio/core/projects/queries", () => ({ projectDetailOptions: () => ({ queryKey: ["project"] }) }));
+vi.mock("@folio/core/projects/queries", () => ({
+  projectDetailOptions: () => ({ queryKey: ["project"] }),
+  projectListOptions: () => ({ queryKey: ["projects"] }),
+}));
 vi.mock("@folio/core/runtimes/hooks", () => ({ useMyRuntimesNeedUpdate: () => false }));
 vi.mock("@folio/core/workspace/queries", () => ({
+  agentListOptions: () => ({ queryKey: ["agents"] }),
   myInvitationListOptions: () => ({ queryKey: ["invitations"] }),
   workspaceKeys: { myInvitations: () => ["invitations"] },
   workspaceListOptions: () => ({ queryKey: ["workspaces"] }),

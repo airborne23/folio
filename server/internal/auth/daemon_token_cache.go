@@ -11,9 +11,9 @@ import (
 )
 
 // daemonTokenCachePrefix namespaces daemon-token cache keys separately
-// from PAT (mul:auth:pat:*) so the two key spaces can't collide and an
+// from PAT (fol:auth:pat:*) so the two key spaces can't collide and an
 // invalidation on one kind of token doesn't accidentally hit the other.
-const daemonTokenCachePrefix = "mul:auth:daemon:"
+const daemonTokenCachePrefix = "fol:auth:daemon:"
 
 // DaemonTokenIdentity is what DaemonAuth needs from the cached lookup —
 // the workspace_id and daemon_id that the middleware injects into the
@@ -24,7 +24,7 @@ type DaemonTokenIdentity struct {
 	DaemonID    string `json:"d"`
 }
 
-// DaemonTokenCache caches resolved daemon-token (mdt_) lookups in Redis.
+// DaemonTokenCache caches resolved daemon-token (fdt_) lookups in Redis.
 // A nil *DaemonTokenCache is safe to use — every method becomes a no-op
 // or reports a cache miss, so single-node dev / tests with no REDIS_URL
 // degrade cleanly to direct DB lookups.

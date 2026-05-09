@@ -113,8 +113,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 		h.LivenessStore = handler.NewRedisLivenessStore(rdb)
 	}
 	// Auth caches: PAT cache is shared between the regular Auth middleware,
-	// the DaemonAuth fallback (mul_) path, and the revoke handler
-	// (invalidate). DaemonTokenCache backs the DaemonAuth mdt_ path. Both
+	// the DaemonAuth fallback (fol_) path, and the revoke handler
+	// (invalidate). DaemonTokenCache backs the DaemonAuth fdt_ path. Both
 	// constructors return nil when rdb is nil — every consumer handles that
 	// as "no cache, always hit DB".
 	patCache := auth.NewPATCache(rdb)
