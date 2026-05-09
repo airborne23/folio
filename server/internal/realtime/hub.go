@@ -568,7 +568,7 @@ func (h *Hub) Snapshot() map[string]any {
 
 // authenticateToken validates a JWT or PAT string and returns the user ID.
 func authenticateToken(tokenStr string, pr PATResolver, ctx context.Context) (string, string) {
-	if strings.HasPrefix(tokenStr, "mul_") {
+	if strings.HasPrefix(tokenStr, "fol_") {
 		if pr == nil {
 			return "", `{"error":"invalid token"}`
 		}

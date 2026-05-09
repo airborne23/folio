@@ -33,7 +33,7 @@ import (
 // ---------------------------------------------------------------------------
 
 // requireDaemonWorkspaceAccess verifies the caller has access to the given workspace.
-// For daemon tokens (mdt_), compares the token's workspace ID directly.
+// For daemon tokens (fdt_), compares the token's workspace ID directly.
 // For PAT/JWT fallback, verifies user membership in the workspace.
 func (h *Handler) requireDaemonWorkspaceAccess(w http.ResponseWriter, r *http.Request, workspaceID string) bool {
 	if workspaceID == "" {
@@ -235,7 +235,7 @@ func (h *Handler) DaemonRegister(w http.ResponseWriter, r *http.Request) {
 	req.WorkspaceID = uuidToString(wsUUID)
 
 	// Verify workspace access and resolve owner.
-	// Daemon tokens (mdt_) prove workspace access directly; OwnerID will be zero
+	// Daemon tokens (fdt_) prove workspace access directly; OwnerID will be zero
 	// (the SQL COALESCE preserves any existing owner on upsert).
 	// PAT/JWT tokens require a membership check and set OwnerID from the member.
 	var ownerID pgtype.UUID

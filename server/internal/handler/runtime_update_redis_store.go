@@ -18,9 +18,9 @@ import (
 // shared storage.
 
 const (
-	updateKeyPrefix          = "mul:update:req:"
-	updatePendingPrefix      = "mul:update:pending:"
-	updateActivePrefix       = "mul:update:active:"
+	updateKeyPrefix          = "fol:update:req:"
+	updatePendingPrefix      = "fol:update:pending:"
+	updateActivePrefix       = "fol:update:active:"
 	updateRedisPopMaxRetries = 5
 )
 

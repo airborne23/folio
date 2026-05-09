@@ -777,7 +777,7 @@ folio issue assign <issue-id> --agent <agent-slug>
 - **叙事位置**: Reference 板块首篇。
 - **写什么**（2000-2500 字）:
   - **认证入口**（开头一段）:
-    - `folio login` → 拿 PAT（`mul_` 前缀）
+    - `folio login` → 拿 PAT（`fol_` 前缀）
     - PAT 存 `~/.folio/config.json`
     - 详细 token 机制见 [Authentication & Tokens](/docs/auth-tokens)
   - **命令总览**（按功能分组，每条一行）:
@@ -810,8 +810,8 @@ folio issue assign <issue-id> --agent <agent-slug>
 - **写什么**（1200-1800 字）:
   - **3 种 token**:
     - **JWT Cookie**（`folio_auth`，HttpOnly，30 天）—— 浏览器
-    - **PAT**（`mul_` 前缀）—— CLI / 脚本
-    - **Daemon Token**（`mdt_` 前缀）—— daemon 专用
+    - **PAT**（`fol_` 前缀）—— CLI / 脚本
+    - **Daemon Token**（`fdt_` 前缀）—— daemon 专用
   - **Token 适用矩阵**:
     | 路由 | JWT | PAT | Daemon Token |
     |---|---|---|---|

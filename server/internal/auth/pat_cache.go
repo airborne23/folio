@@ -19,8 +19,8 @@ import (
 const AuthCacheTTL = 10 * time.Minute
 
 // patCachePrefix namespaces auth-cache keys away from the realtime relay
-// (ws:*) and local-skill (mul:local_skill:*) keys.
-const patCachePrefix = "mul:auth:pat:"
+// (ws:*) and local-skill (fol:local_skill:*) keys.
+const patCachePrefix = "fol:auth:pat:"
 
 // PATCache caches resolved PAT lookups in Redis. A nil *PATCache is safe
 // to use — every method becomes a no-op or reports a cache miss, and the

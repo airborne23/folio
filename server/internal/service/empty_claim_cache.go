@@ -32,8 +32,8 @@ import (
 // expired. With it, the only window left is one extra DB SELECT per
 // runtime per concurrent enqueue, never a stalled task.
 const (
-	emptyClaimCachePrefix   = "mul:claim:runtime:empty:"
-	emptyClaimVersionPrefix = "mul:claim:runtime:version:"
+	emptyClaimCachePrefix   = "fol:claim:runtime:empty:"
+	emptyClaimVersionPrefix = "fol:claim:runtime:version:"
 )
 
 // EmptyClaimCacheTTL bounds how long a cached "no queued task" verdict

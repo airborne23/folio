@@ -91,7 +91,7 @@ Folio = **人 + AI agent 在同一个看板上协作的任务管理平台**。
 | 13 | **Chat** | 和 issue comment 的区别；session 复用 | **完全沙盒**——chat 里的 agent 不能发 comment 到 issue；session_id 用 COALESCE 持久化，agent crash 不会抹掉 |
 | 14 | **Inbox** | 个人通知中心；10 种通知类型 | **Agents 可以被加入 subscriber 表但永远收不到 inbox 通知**——`notifyIssueSubscribers` 显式过滤；mention dedup 只在单 event 内生效（一 comment 里 @alice 5 次 = 1 inbox） |
 | 15 | **Subscriptions** | 谁会自动订阅；如何手动订阅 | **取消分配后旧 assignee 不会被取消订阅**；parent issue 冒泡只对 `status_changed` 生效 |
-| 16 | **Authentication & Tokens** | 3 种凭证 + signup flow + OAuth | JWT cookie（30 天）/ PAT（`mul_` 前缀）/ Daemon Token（`mdt_` 前缀）；Daemon Token **不能命中 user-scoped 路由**；PAT 几乎什么都能命中；signup 白名单优先级：`ALLOWED_EMAILS` > `ALLOWED_EMAIL_DOMAINS` > `ALLOW_SIGNUP` |
+| 16 | **Authentication & Tokens** | 3 种凭证 + signup flow + OAuth | JWT cookie（30 天）/ PAT（`fol_` 前缀）/ Daemon Token（`fdt_` 前缀）；Daemon Token **不能命中 user-scoped 路由**；PAT 几乎什么都能命中；signup 白名单优先级：`ALLOWED_EMAILS` > `ALLOWED_EMAIL_DOMAINS` > `ALLOW_SIGNUP` |
 | 17 | **Realtime & Events** | WebSocket hub + room model + 事件目录 | **40+ event types**（按命名空间分：issue:* / task:* / inbox:* / chat:* 等）；WS 是 **push-only**（client→server 走 HTTP）；room 按 workspace；inbox:* 用 SendToUser 定向推送 |
 
 ### 板块 4. Guides（12 篇，任务导向）
