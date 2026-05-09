@@ -390,6 +390,89 @@ func TestMergeEnvFiltersClaudeCodeVars(t *testing.T) {
 	}
 }
 
+// Daemon-level fix for the "agent's folio CLI gets 503 from a corporate
+// HTTP proxy" loop: strip every proxy env var from the inherited base
+// before spawning. Operators who need outbound proxy for the agent
+// itself (Anthropic API access etc.) configure it explicitly via the
+// per-agent CustomEnv settings — which `mergeEnv` lays down AFTER the
+// filter, so explicit values still take effect.
+func TestMergeEnvStripsAmbientProxyVars(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct{ key, value string }{
+		{"HTTP_PROXY", "http://corp:3128"},
+		{"HTTPS_PROXY", "http://corp:3128"},
+		{"http_proxy", "http://corp:3128"},
+		{"https_proxy", "http://corp:3128"},
+		{"NO_PROXY", "127.0.0.1,localhost"},
+		{"no_proxy", "127.0.0.1,localhost"},
+		{"ALL_PROXY", "socks5://corp:1080"},
+		{"all_proxy", "socks5://corp:1080"},
+		{"FTP_PROXY", "http://corp:3128"},
+	}
+
+	base := []string{"PATH=/usr/bin"}
+	for _, c := range cases {
+		base = append(base, c.key+"="+c.value)
+	}
+
+	env := mergeEnv(base, nil)
+	for _, c := range cases {
+		stripped := c.key + "=" + c.value
+		for _, entry := range env {
+			if entry == stripped {
+				t.Fatalf("expected %q to be stripped, still present", stripped)
+			}
+		}
+	}
+	if !envHasEntry(env, "PATH=/usr/bin") {
+		t.Fatalf("PATH should be preserved, got %v", env)
+	}
+}
+
+// Operators who need a proxy for the agent (claude → api.anthropic.com)
+// configure it via per-agent CustomEnv. CustomEnv lands in `extra`,
+// which the merge appends after the filter — so explicit values reach
+// the agent even though the inherited base was stripped.
+func TestMergeEnvCustomEnvProxyOverridesFilter(t *testing.T) {
+	t.Parallel()
+
+	// Inherited base has stale PROXY (operator's shell exported
+	// HTTP_PROXY=127.0.0.1:10809 for outbound traffic). Filter strips
+	// it. CustomEnv re-adds the values the agent actually needs.
+	env := mergeEnv(
+		[]string{"HTTP_PROXY=http://operator:3128", "PATH=/usr/bin"},
+		map[string]string{
+			"HTTPS_PROXY": "http://anthropic-proxy:443",
+			"NO_PROXY":    "10.0.0.0/8,api.internal",
+		},
+	)
+
+	want := map[string]string{
+		"HTTPS_PROXY": "http://anthropic-proxy:443",
+		"NO_PROXY":    "10.0.0.0/8,api.internal",
+	}
+	for k, v := range want {
+		if !envHasEntry(env, k+"="+v) {
+			t.Fatalf("expected CustomEnv %s=%s to land in agent env, got %v", k, v, env)
+		}
+	}
+	for _, entry := range env {
+		if entry == "HTTP_PROXY=http://operator:3128" {
+			t.Fatalf("inherited HTTP_PROXY leaked through, got %v", env)
+		}
+	}
+}
+
+func envHasEntry(env []string, want string) bool {
+	for _, e := range env {
+		if e == want {
+			return true
+		}
+	}
+	return false
+}
+
 func TestBuildEnvAppendsExtras(t *testing.T) {
 	t.Parallel()
 
