@@ -116,15 +116,38 @@ export function ConnectRemoteDialog({ onClose }: { onClose: () => void }) {
 // Step 1: Installation instructions
 // ---------------------------------------------------------------------------
 
-const INSTALL_CMD = "curl -fsSL https://raw.githubusercontent.com/airborne23/folio/main/scripts/install.sh | bash";
+const INSTALL_CMD =
+  "curl -fsSL https://raw.githubusercontent.com/airborne23/folio/main/scripts/install.sh | bash";
 
-const CONFIGURE_CMD = `folio config set server_url https://api.folio.ai
-folio config set app_url https://folio.ai`;
+/**
+ * One-shot self-host setup. The CLI's `setup self-host --token` flag
+ * collapses what used to be four separate calls (config set server_url
+ * / config set app_url / login --token / daemon start) into a single
+ * non-interactive command — see PR #1.
+ *
+ * The URLs default to the page origin because in the typical self-host
+ * topology (Next.js reverse-proxies /api/* to backend) they're the same
+ * URL. The user can edit if their backend lives somewhere else (split
+ * subdomains, dev setup with different ports, etc.).
+ */
+function buildSetupCmd(serverURL: string, appURL: string) {
+  return `folio setup self-host \\
+  --server-url ${serverURL} \\
+  --app-url    ${appURL} \\
+  --token fol_YOUR_TOKEN_HERE`;
+}
 
-const LOGIN_CMD = "folio login --token <YOUR_TOKEN>";
-
-const START_CMD = `folio daemon start --device-name "my-ec2-instance"
-folio daemon status`;
+/**
+ * NO_PROXY workaround. Go's net/http honours HTTP_PROXY strictly — a
+ * shell that exports a corporate proxy will route the LAN call through
+ * it and the request never reaches the server. Worth surfacing in the
+ * dialog because it's the single most common "the CLI just hangs"
+ * cause we hit during this deploy.
+ */
+function buildNoProxyCmd(serverHost: string) {
+  return `echo 'export NO_PROXY="\${NO_PROXY},${serverHost}"' >> ~/.bashrc
+source ~/.bashrc`;
+}
 
 function CodeBlock({
   code,
@@ -170,6 +193,24 @@ function InstructionsStep({
   onClose: () => void;
 }) {
   const { t } = useT("runtimes");
+
+  // Page origin is the user's current Folio app URL. We reuse it for
+  // both --server-url and --app-url so the most common self-host
+  // topology (Next.js reverse-proxying /api/* to a co-located backend)
+  // gives a copy-pasteable command out of the box. Split-host setups
+  // are obvious enough that the user will edit before pasting.
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://your-folio";
+  const serverHost = (() => {
+    try {
+      return new URL(origin).host;
+    } catch {
+      return origin;
+    }
+  })();
+  const setupCmd = buildSetupCmd(origin, origin);
+  const noProxyCmd = buildNoProxyCmd(serverHost);
+
   return (
     <>
       <DialogHeader>
@@ -199,12 +240,13 @@ function InstructionsStep({
               <Server className="h-3.5 w-3.5" />
               {t(($) => $.connect.step2)}
             </div>
-            <CodeBlock
-              code={CONFIGURE_CMD}
-              copyKey="config"
-              copied={copied}
-              onCopy={onCopy}
-            />
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              {t(($) => $.connect.step2_hint_prefix)}
+              <span className="font-medium text-foreground">
+                {t(($) => $.connect.step2_hint_destination)}
+              </span>
+              {t(($) => $.connect.step2_hint_suffix)}
+            </p>
           </div>
 
           <div>
@@ -212,30 +254,31 @@ function InstructionsStep({
               {t(($) => $.connect.step3)}
             </div>
             <CodeBlock
-              code={LOGIN_CMD}
-              copyKey="login"
+              code={setupCmd}
+              copyKey="setup"
               copied={copied}
               onCopy={onCopy}
             />
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              {t(($) => $.connect.step3_hint_prefix)}
-              <span className="font-medium text-foreground">
-                {t(($) => $.connect.step3_hint_destination)}
-              </span>
-              {t(($) => $.connect.step3_hint_suffix)}
+            <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+              {t(($) => $.connect.step3_hint)}
             </p>
           </div>
 
-          <div>
-            <div className="mb-1 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              {t(($) => $.connect.step4)}
+          <div className="rounded-md border bg-muted/30 p-2.5">
+            <div className="text-[11px] leading-relaxed text-muted-foreground">
+              <span className="font-medium text-foreground">
+                {t(($) => $.connect.proxy_note_label)}
+              </span>
+              {t(($) => $.connect.proxy_note_body)}
             </div>
-            <CodeBlock
-              code={START_CMD}
-              copyKey="start"
-              copied={copied}
-              onCopy={onCopy}
-            />
+            <div className="mt-2">
+              <CodeBlock
+                code={noProxyCmd}
+                copyKey="no_proxy"
+                copied={copied}
+                onCopy={onCopy}
+              />
+            </div>
           </div>
 
           <div className="rounded-md border border-warning/30 bg-warning/5 p-2.5">
