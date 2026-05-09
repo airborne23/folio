@@ -1956,17 +1956,29 @@ func (h *Handler) buildChannelPrompt(ctx context.Context, task db.AgentTaskQueue
 	fmt.Fprintf(&b, "---\nRespond to the most recent message. Trigger message id: %s.\n",
 		taskCtx.TriggerMessageID,
 	)
-	// Silence rule: when the trigger message @-mentions a different agent,
-	// produce empty output rather than narrating "this isn't for me". The
-	// dispatcher already suppresses subscribe-mode agents on directed
-	// mentions (channel_dispatcher.go), so reaching this prompt means the
-	// agent IS expected to respond — but we restate the rule defensively
-	// in case a future trigger path forgets to filter.
+	// Silence rule. Restated last so it is the most recent thing in the
+	// agent's context window when it starts its turn. Models reliably
+	// disobey "produce no output" when it appears mid-prompt — Claude /
+	// Codex / GPT all default to "say SOMETHING", and a single-word reply
+	// like "Silence." gets posted as a real channel message because the
+	// daemon sees non-empty output. The post-processor in
+	// daemon.isChannelSilenceMarker catches the most common patterns,
+	// but a strong restatement here cuts down on the false-positive rate
+	// (occasional real replies that happened to start with "Silence")
+	// at the source.
 	b.WriteString(
-		"If the most recent message explicitly @-mentions a DIFFERENT agent " +
-			"and you have nothing useful to add, output nothing at all — do not " +
-			"produce text like \"this is not addressed to me\" or \"I do not need to reply\". " +
-			"Silence is the correct response in that case.\n",
+		"\n--- SILENCE RULE (READ CAREFULLY) ---\n" +
+			"If you have nothing useful to add — for example because the " +
+			"trigger message explicitly @-mentions a DIFFERENT agent, or it " +
+			"is a duplicate of a request you already answered, or it is a " +
+			"pure acknowledgment / sign-off — produce ABSOLUTELY NO OUTPUT. " +
+			"Empty stdout. Zero characters.\n\n" +
+			"Do NOT write the word \"Silence\". Do NOT write \"(no reply)\" " +
+			"or \"[silent]\". Do NOT explain why you aren't replying. Do NOT " +
+			"narrate your decision. Any text you emit will be posted as a " +
+			"channel message verbatim and your reasoning will read as noise.\n\n" +
+			"If you DO have something useful to add, just write it directly. " +
+			"No header, no \"replying because...\" preamble.\n",
 	)
 	return b.String(), workspaceID
 }

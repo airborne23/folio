@@ -1791,6 +1791,18 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, slot i
 
 	switch result.Status {
 	case "completed":
+		// Channel "silence marker" rescue: the prompt instructs agents to
+		// output literally nothing when the trigger message isn't for
+		// them, but Claude / Codex / GPT regularly disobey that and emit
+		// a one-liner like "Silence." or "(no reply)" or a full paragraph
+		// explaining why they aren't replying. Without this filter that
+		// explanation lands in the channel as the agent's next message —
+		// the exact failure mode the prompt was trying to prevent.
+		// Detect those markers and re-route through the empty-output
+		// silent-completion branch below.
+		if task.ChannelPrompt != "" && isChannelSilenceMarker(result.Output) {
+			result.Output = ""
+		}
 		if result.Output == "" {
 			// Channel tasks intentionally allow silent completion — when
 			// dispatcher fans out to several agents, each agent decides
@@ -2273,6 +2285,111 @@ func convertSkillsForEnv(skills []SkillData) []execenv.SkillContextForEnv {
 		}
 	}
 	return result
+}
+
+// isChannelSilenceMarker reports whether output is a "I'm not replying"
+// marker — text the agent emits *instead* of the empty output the prompt
+// asks for. We treat these as equivalent to silence so they don't leak
+// into the channel as actual messages.
+//
+// Distinguishing real replies from silence-narration is a precision
+// problem; we err on the side of silencing because the failure mode of
+// a false positive (an agent's brief "Silence is golden..." reply gets
+// dropped) is much less harmful than the false negative (a "this isn't
+// for me, staying silent" non-reply lands as channel noise).
+//
+// Two passes:
+//
+//  1. Exact short markers (≤500 chars, stripped of quote / markdown /
+//     punctuation chrome) — catches "Silence.", "(no reply)", etc.
+//
+//  2. Tail markers — when the *last sentence* is a silence marker the
+//     agent is narrating its decision and signing off with it; the rest
+//     of the message is the noise the prompt was trying to prevent.
+//     "...not for me. Silence." is the canonical shape.
+//
+// Outputs longer than 500 chars never match — at that length the
+// message is plausibly a real reply that happens to mention silence.
+func isChannelSilenceMarker(output string) bool {
+	trimmed := strings.TrimSpace(output)
+	if trimmed == "" {
+		return true
+	}
+	if len(trimmed) > 500 {
+		return false
+	}
+
+	// Pass 1: exact short markers.
+	whole := normaliseSilenceCandidate(trimmed)
+	if isExactSilenceMarker(whole) {
+		return true
+	}
+
+	// Pass 2: the last sentence (or trailing dependent clause) is a
+	// silence marker. Split on sentence-ending punctuation plus em /
+	// en dashes — agents commonly write "...not for me — silence." and
+	// the dash is the actual clause boundary, not the period that
+	// follows. A real reply almost never *ends* on a bare "silence" /
+	// "no reply" / etc., while LLM silence-narration reliably does.
+	clauses := strings.FieldsFunc(trimmed, func(r rune) bool {
+		switch r {
+		case '.', '!', '?', ':', ';', '—', '–', '-':
+			return true
+		}
+		return false
+	})
+	for i := len(clauses) - 1; i >= 0; i-- {
+		clause := normaliseSilenceCandidate(clauses[i])
+		if clause == "" {
+			continue
+		}
+		if isExactSilenceMarker(clause) {
+			return true
+		}
+		// First non-empty trailing clause that ISN'T a marker → real
+		// reply. Bail rather than peeling further back; otherwise
+		// "Here's the fix. The cache key was wrong. Silence is golden."
+		// could falsely match on "Silence is golden" two clauses up.
+		break
+	}
+	return false
+}
+
+// normaliseSilenceCandidate strips quote / markdown / punctuation
+// chrome agents wrap silence markers in, plus surrounding whitespace,
+// and lowercases the result.
+func normaliseSilenceCandidate(s string) string {
+	return strings.Trim(strings.ToLower(strings.TrimSpace(s)), "*_`>\"' \t\n\r.()[]")
+}
+
+// isExactSilenceMarker matches the high-frequency phrases the LLM
+// produces when it narrates a decision to stay silent.
+func isExactSilenceMarker(s string) bool {
+	switch s {
+	case "silence",
+		"silent",
+		"no reply",
+		"no reply needed",
+		"no reply needed here",
+		"no response",
+		"no response needed",
+		"not replying",
+		"not addressed to me",
+		"this is not addressed to me",
+		"this isn't addressed to me",
+		"this is not for me",
+		"this isn't for me",
+		"i do not need to reply",
+		"i don't need to reply",
+		"i have nothing to add",
+		"nothing to add",
+		"staying silent",
+		"i'll stay silent",
+		"i will stay silent",
+		"i should stay silent":
+		return true
+	}
+	return false
 }
 
 // isBlockedEnvKey returns true if the key must not be overridden by user-
