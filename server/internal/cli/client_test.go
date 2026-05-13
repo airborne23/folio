@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestPostJSON(t *testing.T) {
@@ -231,6 +233,84 @@ func TestDownloadFile(t *testing.T) {
 		_, err := client.DownloadFile(context.Background(), "/uploads/missing")
 		if err == nil {
 			t.Fatal("expected error, got nil")
+		}
+	})
+
+	t.Run("transfer HTTP client has no wall-clock timeout", func(t *testing.T) {
+		// Regression test for the 15s HTTPClient.Timeout that used to kill
+		// downloads mid-body on any stall. The dedicated transfer client must
+		// rely on the per-request context, never a client-wide deadline.
+		client := NewAPIClient("http://example.invalid", "", "")
+		if client.TransferHTTPClient == nil {
+			t.Fatal("TransferHTTPClient must be non-nil")
+		}
+		if client.TransferHTTPClient.Timeout != 0 {
+			t.Errorf("TransferHTTPClient.Timeout must be 0 to allow slow streams; got %v", client.TransferHTTPClient.Timeout)
+		}
+		// And the RPC client keeps its tight cap.
+		if client.HTTPClient.Timeout == 0 {
+			t.Error("HTTPClient.Timeout must remain set so misconfigured RPCs fail fast")
+		}
+	})
+}
+
+func TestDownloadFileTo(t *testing.T) {
+	t.Run("streams body to writer and returns byte count", func(t *testing.T) {
+		payload := bytes.Repeat([]byte("doris-faq-attachment\n"), 4096)
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Write(payload)
+		}))
+		defer srv.Close()
+
+		client := NewAPIClient(srv.URL, "", "test-token")
+		var buf bytes.Buffer
+		n, err := client.DownloadFileTo(context.Background(), "/uploads/big.bin", &buf)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if n != int64(len(payload)) {
+			t.Errorf("expected %d bytes, got %d", len(payload), n)
+		}
+		if !bytes.Equal(buf.Bytes(), payload) {
+			t.Errorf("payload mismatch (len got=%d want=%d)", buf.Len(), len(payload))
+		}
+	})
+
+	t.Run("survives a body that takes longer than HTTPClient.Timeout", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping slow-body regression in -short")
+		}
+		// Stretch the response across enough wall-clock that a 15s
+		// http.Client.Timeout would have killed it. Keep it under 5s so
+		// the test stays cheap by forcing a small Timeout on the RPC
+		// client and proving the transfer client ignores it.
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			flusher, _ := w.(http.Flusher)
+			for i := 0; i < 3; i++ {
+				io.WriteString(w, "chunk\n")
+				if flusher != nil {
+					flusher.Flush()
+				}
+				time.Sleep(700 * time.Millisecond)
+			}
+		}))
+		defer srv.Close()
+
+		client := NewAPIClient(srv.URL, "", "")
+		// Force the RPC client to a value that would fire mid-body if it
+		// governed downloads — proving the transfer client is the one in
+		// charge.
+		client.HTTPClient = &http.Client{Timeout: 300 * time.Millisecond}
+
+		var buf bytes.Buffer
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		n, err := client.DownloadFileTo(ctx, "/uploads/slow.bin", &buf)
+		if err != nil {
+			t.Fatalf("expected success despite tight HTTPClient.Timeout, got %v", err)
+		}
+		if n == 0 {
+			t.Error("expected non-zero bytes written")
 		}
 	})
 }
