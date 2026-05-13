@@ -44,13 +44,20 @@ func normalizeGOOS(goos string) string {
 // APIClient is a REST client for the Folio server API.
 // Used by ctrl subcommands (agent, runtime, status, etc.). Requests
 // automatically include auth and execution context headers when configured.
+//
+// HTTPClient carries a 15s total-request timeout suitable for small JSON
+// RPCs. Body streams (attachment upload / download) MUST use
+// TransferHTTPClient instead — its Timeout is zero so the per-request
+// context deadline governs the wall clock and slow body reads aren't
+// killed mid-stream.
 type APIClient struct {
-	BaseURL     string
-	WorkspaceID string
-	Token       string
-	AgentID     string // When set, requests are attributed to this agent instead of the user.
-	TaskID      string // When set, sent as X-Task-ID for agent-task validation.
-	HTTPClient  *http.Client
+	BaseURL            string
+	WorkspaceID        string
+	Token              string
+	AgentID            string // When set, requests are attributed to this agent instead of the user.
+	TaskID             string // When set, sent as X-Task-ID for agent-task validation.
+	HTTPClient         *http.Client
+	TransferHTTPClient *http.Client
 
 	// Identity overrides. Empty values fall back to the package-level
 	// ClientPlatform / ClientVersion / ClientOS.
@@ -62,10 +69,11 @@ type APIClient struct {
 // NewAPIClient creates a new API client for ctrl commands.
 func NewAPIClient(baseURL, workspaceID, token string) *APIClient {
 	return &APIClient{
-		BaseURL:     strings.TrimRight(baseURL, "/"),
-		WorkspaceID: workspaceID,
-		Token:       token,
-		HTTPClient:  &http.Client{Timeout: 15 * time.Second},
+		BaseURL:            strings.TrimRight(baseURL, "/"),
+		WorkspaceID:        workspaceID,
+		Token:              token,
+		HTTPClient:         &http.Client{Timeout: 15 * time.Second},
+		TransferHTTPClient: &http.Client{}, // body streams rely on per-request context, never the client-wide timeout.
 	}
 }
 
@@ -397,45 +405,62 @@ func (c *APIClient) UploadFileWithURL(ctx context.Context, fileData []byte, file
 	return result.ID, result.URL, nil
 }
 
-// DownloadFile downloads a file from the given URL and returns the response body.
-// This is used for downloading attachments via their signed download_url.
-// Downloads are limited to 100 MB to match the upload size limit.
+// DownloadFileTo streams the body of downloadURL into dst and returns the
+// number of bytes written. Unlike DownloadFile it does not buffer the
+// payload in memory, so it is the only safe variant for non-trivial
+// attachments. Cancellation is governed entirely by ctx — the underlying
+// HTTP client has no wall-clock Timeout, so a slow but progressing body
+// will not be killed mid-stream the way HTTPClient.Timeout used to do.
 //
 // The URL may be absolute (a signed CloudFront/S3 URL) or relative
 // (a server-relative path like "/uploads/...") depending on how the
 // server is configured. Relative URLs are resolved against the client's
 // BaseURL and sent with the standard auth headers; absolute URLs are
 // used as-is so that their query-string signatures are not disturbed.
-func (c *APIClient) DownloadFile(ctx context.Context, downloadURL string) ([]byte, error) {
+func (c *APIClient) DownloadFileTo(ctx context.Context, downloadURL string, dst io.Writer) (int64, error) {
 	isRelative := !strings.HasPrefix(downloadURL, "http://") && !strings.HasPrefix(downloadURL, "https://")
 	if isRelative {
 		if c.BaseURL == "" {
-			return nil, fmt.Errorf("download URL %q is relative but client has no BaseURL", downloadURL)
+			return 0, fmt.Errorf("download URL %q is relative but client has no BaseURL", downloadURL)
 		}
 		downloadURL = c.BaseURL + downloadURL
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	if isRelative {
 		c.setHeaders(req)
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	httpClient := c.TransferHTTPClient
+	if httpClient == nil {
+		httpClient = c.HTTPClient
+	}
+	resp, err := httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return nil, fmt.Errorf("download returned %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+		return 0, fmt.Errorf("download returned %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
 	}
 
-	const maxDownloadSize = 100 << 20 // 100 MB
-	return io.ReadAll(io.LimitReader(resp.Body, maxDownloadSize))
+	return io.Copy(dst, resp.Body)
+}
+
+// DownloadFile buffers the entire body in memory and returns it. Prefer
+// DownloadFileTo for anything that might be large — this exists only for
+// callers that legitimately need bytes (small inline previews, tests).
+func (c *APIClient) DownloadFile(ctx context.Context, downloadURL string) ([]byte, error) {
+	var buf bytes.Buffer
+	if _, err := c.DownloadFileTo(ctx, downloadURL, &buf); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }
 
 // HealthCheck hits the /health endpoint and returns the response body.
